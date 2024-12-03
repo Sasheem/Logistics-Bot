@@ -29,6 +29,7 @@ WAR_SHEET_ID = os.getenv('WAR_SHEET_ID')
 ATTACK_SHEET_ID = os.getenv('ATTACK_SHEET_ID')
 DEFENSE_SHEET_ID = os.getenv('DEFENSE_SHEET_ID')
 DRAGON_SHEET_ID = os.getenv('DRAGON_SHEET_ID')
+ROSTER_SHEET_ID = os.getenv('ROSTER_SHEET_ID')
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -766,5 +767,40 @@ async def stats_history(ctx: CommandContext, player_name: str, category: str, li
             await ctx.send(f"# {title}:\n" + "\n".join(formatted_info))
     else:
         await ctx.send("Player not found.")
+
+# KEEP-LOGISTICS command
+@client.command(
+    name="keep-logistics",
+    description="Fetch the logistics for a specific keep.",
+    options=[
+        {
+            "name": "keep_name",
+            "description": "Enter the keep's name",
+            "type": 3,  # STRING type
+            "required": True,
+        },
+    ],
+)
+async def keep_logistics(ctx: CommandContext, keep_name: str):
+    await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
+    keeps_list = fetch_sheet_data(ROSTER_SHEET_ID, "bot_keep_logistics")
+    entries = [record for record in keeps_list if str(record['Main Keep Name']).lower() == keep_name.lower()]
+
+    if entries:
+        for i, entry in enumerate(entries, start=1):
+            title = f"Keep Logistics Entry {i}"
+            subtitle = f"Discord Name: {entry['Discord Name']}\nDate: {entry['Date']}"
+            divider = "--" * 10  # Section divider
+            details = (
+                f"**Main Keep Name**: \n{entry['Main Keep Name']}\n"
+                f"**Main Keep Access**: \n{entry['Main Keep Access']}\n"
+                f"**Secondary Keep Names**: \n{entry['Secondary Keep Names']}\n"
+                f"**Alt Keep Names**: \n{entry['Alt Keep Names']}\n"
+                f"**Additional Details**: \n{entry['Additional Details']}\n"
+            )
+            message = f"# {title}\n{subtitle}\n{divider}\n{details}"
+            await ctx.send(message)
+    else:
+        await ctx.send("No entries found for the specified keep name.")
 
 client.start()
