@@ -10,20 +10,31 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Discord bot token
-DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+# DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+# Determine the environment
+environment = os.getenv('ENVIRONMENT', 'live')
+
+# Set the token based on the environment
+if environment == 'test':
+    TOKEN = os.getenv('DISCORD_TOKEN_TEST')
+    credentials_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS_PATH_TEST')
+    # Normalize the credentials path 
+    credentials_path = os.path.normpath(credentials_path)
+else:
+    TOKEN = os.getenv('DISCORD_TOKEN_LIVE')
+    credentials_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS_PATH_LIVE')
 
 # Google Sheet ID
 WAR_SHEET_ID = os.getenv('WAR_SHEET_ID')
 ATTACK_SHEET_ID = os.getenv('ATTACK_SHEET_ID')
 DEFENSE_SHEET_ID = os.getenv('DEFENSE_SHEET_ID')
 DRAGON_SHEET_ID = os.getenv('DRAGON_SHEET_ID')
-credentials_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS_PATH')
 
 intents = discord.Intents.default()
 intents.message_content = True
 intents.messages = True
 bot = commands.Bot(command_prefix="!", intents=intents)
-client = Client(token=DISCORD_TOKEN)
+client = Client(token=TOKEN)
 
 # Google Sheets setup
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -538,13 +549,23 @@ async def list_name_changes(ctx: CommandContext):
         header = "{:<20} {:<20}\n".format("Old Name", "New Name")
         separator = "=" * 36 + "\n"
         formatted_info = "```\n" + header + separator
+        messages = []
         for entry in name_changes_list:
             date = entry['Date']
             old_name = entry['Old Name']
             new_name = entry['New Name']
-            formatted_info += f"{date}\n{old_name:<20} {new_name:<20}\n" + "-" * 30 + "\n"
+            entry_info = f"{date}\n{old_name:<20} {new_name:<20}\n" + "-" * 30 + "\n"
+            if len(formatted_info) + len(entry_info) + 3 > 2000:  # 2000 is the Discord message limit
+                formatted_info += "```"
+                messages.append(formatted_info)
+                formatted_info = "```\n" + entry_info
+            else:
+                formatted_info += entry_info
         formatted_info += "```"
-        await ctx.send(formatted_info)
+        messages.append(formatted_info)
+        
+        for message in messages:
+            await ctx.send(message)
     else:
         await ctx.send("No recent name changes found.")
 
