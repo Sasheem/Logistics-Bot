@@ -771,20 +771,37 @@ async def stats_history(ctx: CommandContext, player_name: str, category: str, li
 # KEEP-LOGISTICS command
 @client.command(
     name="keep-logistics",
-    description="Fetch the logistics for a specific keep.",
+    description="Fetch the logistics for a specific keep or Discord name.",
     options=[
         {
             "name": "keep_name",
-            "description": "Enter the keep's name",
+            "description": "Enter the Keep's name",
             "type": 3,  # STRING type
-            "required": True,
+            "required": False,
+        },
+        {
+            "name": "discord_name",
+            "description": "Enter the Discord name",
+            "type": 3,  # STRING type
+            "required": False,
         },
     ],
 )
-async def keep_logistics(ctx: CommandContext, keep_name: str):
+async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_name: str = None):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
     keeps_list = fetch_sheet_data(ROSTER_SHEET_ID, "bot_keep_logistics")
-    entries = [record for record in keeps_list if str(record['Main Keep Name']).lower() == keep_name.lower()]
+
+    if keep_name and discord_name:
+        await ctx.send("Please provide either a Keep name or a Discord name, not both.")
+        return
+
+    if keep_name:
+        entries = [record for record in keeps_list if str(record['Main Keep Name']).lower() == keep_name.lower()]
+    elif discord_name:
+        entries = [record for record in keeps_list if str(record['Discord Name']).lower() == discord_name.lower()]
+    else:
+        await ctx.send("Please provide either a Keep name or a Discord name.")
+        return
 
     if entries:
         for i, entry in enumerate(entries, start=1):
@@ -801,6 +818,6 @@ async def keep_logistics(ctx: CommandContext, keep_name: str):
             message = f"# {title}\n{subtitle}\n{divider}\n{details}"
             await ctx.send(message)
     else:
-        await ctx.send("No entries found for the specified keep name.")
+        await ctx.send("No entries found for the specified keep or Discord name.")
 
 client.start()
