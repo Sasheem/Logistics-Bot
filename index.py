@@ -30,6 +30,7 @@ ATTACK_SHEET_ID = os.getenv('ATTACK_SHEET_ID')
 DEFENSE_SHEET_ID = os.getenv('DEFENSE_SHEET_ID')
 DRAGON_SHEET_ID = os.getenv('DRAGON_SHEET_ID')
 ROSTER_SHEET_ID = os.getenv('ROSTER_SHEET_ID')
+RCA_SHEET_ID = os.getenv('RCA_SHEET_ID')
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -819,5 +820,84 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
             await ctx.send(message)
     else:
         await ctx.send("No entries found for the specified keep or Discord name.")
+
+# RCA-INFO command
+@client.command(
+    name="rca-info",
+    description="Fetch the RCA info for a specific name.",
+    options=[
+        {
+            "name": "name",
+            "description": "Enter the name",
+            "type": 3,  # STRING type
+            "required": True,
+        },
+    ],
+)
+async def rca_info(ctx: CommandContext, name: str):
+    await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
+    rca_list = fetch_sheet_data(RCA_SHEET_ID, "bot_rca_info")
+    entries = [record for record in rca_list if str(record['Name']).lower() == name.lower()]
+
+    if entries:
+        for entry in entries:
+            title = f"RCA Info: {entry['Name']}"
+            subtitle = f"Type: {entry['Type']}\nRein Cap: {entry['Rein Cap']}\nPower Level: {entry['Power Level']}"
+            details = (
+                f"**Email**: \n{entry['Email']}\n\n"
+                f"**Password**: \n{entry['Password']}\n\n"
+                f"**Facebook Name**: \n{entry['Facebook Name']}\n\n"
+                f"**Access**: \n{entry['Access']}\n\n"
+                f"**Force Logs**: \n{entry['Force Logs']}\n"
+                f"**Notes**: \n{entry['Notes']}\n"
+            )
+            message = f"## {title}\n{subtitle}\n{'--' * 10}\n{details}"
+            await ctx.send(message)
+    else:
+        await ctx.send(f"No entries found for the specified name: {name}.")
+
+# RCA-LOGS command
+@client.command(
+    name="rca-logs",
+    description="Fetch the RCA logs.",
+)
+async def rca_logs(ctx: CommandContext):
+    await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
+    rca_logs_list = fetch_sheet_data(RCA_SHEET_ID, "bot_rca_info")
+    if rca_logs_list:
+        messages = []
+        chunk_counter = 1
+        formatted_info = f"# RCA Logs {chunk_counter}\n" + "```\n"
+        for entry in rca_logs_list:
+            name = entry['Name']
+            rein_cap = entry['Rein Cap']
+            type_ = entry['Type']
+            power_level = entry['Power Level']
+            facebook_name = entry['Facebook Name']
+            email = entry['Email']
+            password = entry['Password']
+            entry_info = (
+                f"{name:<20}\n"
+                f"{rein_cap} | {type_} | {power_level}\n"
+                f"{'-' * 5}\n"
+                f"FB: {facebook_name:<20}\n"
+                f"{email} | {password}\n"
+                + "-" * 30 + "\n"
+            )
+            if len(formatted_info) + len(entry_info) + 3 > 2000:  # 2000 is the Discord message limit
+                formatted_info += "```"
+                messages.append(formatted_info)
+                chunk_counter += 1
+                formatted_info = f"# RCA Logs {chunk_counter}\n" + "```\n" + entry_info
+            else:
+                formatted_info += entry_info
+        formatted_info += "```"
+        messages.append(formatted_info)
+        
+        for message in messages:
+            await ctx.send(message)
+    else:
+        await ctx.send("No RCA logs found.")
+
 
 client.start()
