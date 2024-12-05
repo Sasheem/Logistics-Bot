@@ -231,7 +231,7 @@ async def roster_position(ctx: CommandContext, name: str):
             print(f"Error sending response: {e}")
             await ctx.send(f"An error occurred while sending the response for {name}. Please try again.")
     else:
-        await ctx.send(f"Player {name} not found in the roster.")
+        await ctx.send(f"## Oops, this is embarassing.. \n\nPlayer not found: **{name}**.\nPlease check the spelling and try again.")
 
 # Combined STATS command
 @client.command(
@@ -288,7 +288,7 @@ async def stats(ctx: CommandContext, type: str, name: str):
             formatted_info.append(f"{formatted_key}: {formatted_value}")
         await ctx.send(f"# {title}:\n" + "\n".join(formatted_info))
     else:
-        await ctx.send("Player not found.")
+        await ctx.send(f"## Oops, this is embarassing.. \n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
 
 # Combined RANK command
 @client.command(
@@ -389,7 +389,7 @@ async def rank(ctx: CommandContext, type: str, name: str):
             
             await ctx.send("\n".join(formatted_info))
         else:
-            await ctx.send("Player not found.")
+            await ctx.send(f"## Oops, this is embarassing.. \n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
 
 # Combined LIST RANKS command for attack and defense
 @client.command(
@@ -767,7 +767,7 @@ async def stats_history(ctx: CommandContext, player_name: str, category: str, li
                 formatted_info.append(f"## Editor Notes:\n{entry['Editor Notes']}")
             await ctx.send(f"# {title}:\n" + "\n".join(formatted_info))
     else:
-        await ctx.send("Player not found.")
+        await ctx.send(f"## Oops, this is embarassing.. \n\nNo entries found for: **{player_name}**.\nPlease check the spelling and try again.")
 
 # KEEP-LOGISTICS command
 @client.command(
@@ -819,7 +819,10 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
             message = f"# {title}\n{subtitle}\n{divider}\n{details}"
             await ctx.send(message)
     else:
-        await ctx.send("No entries found for the specified keep or Discord name.")
+        if keep_name:
+            await ctx.send(f"## Oops, this is embarassing.. \n\nNo entries found for: **{keep_name}**.\nPlease check the spelling and try again.")
+        else:
+            await ctx.send(f"## Oops, this is embarassing.. \n\nNo entries found for: **{discord_name}**.\nPlease check the spelling and try again.")
 
 # RCA-INFO command
 @client.command(
@@ -854,7 +857,7 @@ async def rca_info(ctx: CommandContext, name: str):
             message = f"## {title}\n{subtitle}\n{'--' * 10}\n{details}"
             await ctx.send(message)
     else:
-        await ctx.send(f"No entries found for the specified name: {name}.")
+        await ctx.send(f"## Oops, this is embarassing.. \n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
 
 # RCA-LOGS command
 @client.command(
