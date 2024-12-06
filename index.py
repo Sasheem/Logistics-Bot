@@ -234,7 +234,7 @@ async def roster_position(ctx: CommandContext, name: str):
     else:
         await ctx.send(f"## Oops, this is embarrassing.. \n\nPlayer not found: **{name}**.\nPlease check the spelling and try again.")
 
-# Combined STATS command
+# STATS command
 @client.command(
     name="stats",
     description="Find a player's most recent stats submitted for different categories.",
@@ -269,12 +269,23 @@ async def stats(ctx: CommandContext, type: str, name: str):
     }
     stats_type = stats_types.get(type)
     player_info = get_player_stats_info(WAR_SHEET_ID, stats_type, name.strip())  # Remove leading and trailing spaces
+
+    # Soft match if no exact match found
+    if not player_info:
+        soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(WAR_SHEET_ID, stats_type)], scorer=fuzz.token_sort_ratio)
+        best_match = soft_matches[0] if soft_matches else None
+        if best_match and best_match[1] > 70:
+            player_info = get_player_stats_info(WAR_SHEET_ID, stats_type, best_match[0])
+
     if player_info:
         title = f"{type.replace('-', ' ').title()} Stats"
-        formatted_info = []
+        date = player_info.get('Date', 'N/A')
+        formatted_info = [f"# {title}\nDate: {date}"]
         base_section = False
         glam_section = False
         for key, value in player_info.items():
+            if key in ['Date', 'Additional Details', 'Editor Notes']:
+                continue
             if "(Base)" in key and not base_section:
                 formatted_info.append("## Base")
                 base_section = True
@@ -287,9 +298,9 @@ async def stats(ctx: CommandContext, type: str, name: str):
             else:
                 formatted_value = f"{round(value):,}" if isinstance(value, (int, float)) and math.isfinite(value) else f"{value}"
             formatted_info.append(f"{formatted_key}: {formatted_value}")
-        await ctx.send(f"# {title}:\n" + "\n".join(formatted_info))
+        await ctx.send("\n".join(formatted_info))
     else:
-        await ctx.send(f"## Oops, this is embarrassing.. \n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
+        await ctx.send(f"## Oops, this is embarrassing..\n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
 
 # RANK command
 @client.command(
@@ -328,12 +339,25 @@ async def rank(ctx: CommandContext, type: str, name: str):
         attack_info = get_player_rank_info(WAR_SHEET_ID, "dragon_attack_rank", name.strip())
         defense_info = get_player_rank_info(WAR_SHEET_ID, "dragon_defense_rank", name.strip())
         
+        # Soft match if no exact match found
+        if not attack_info and not defense_info:
+            soft_matches_attack = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(WAR_SHEET_ID, "dragon_attack_rank")], scorer=fuzz.token_sort_ratio)
+            soft_matches_defense = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(WAR_SHEET_ID, "dragon_defense_rank")], scorer=fuzz.token_sort_ratio)
+            best_match_attack = soft_matches_attack[0] if soft_matches_attack else None
+            best_match_defense = soft_matches_defense[0] if soft_matches_defense else None
+            if best_match_attack and best_match_attack[1] > 70:
+                attack_info = get_player_rank_info(WAR_SHEET_ID, "dragon_attack_rank", best_match_attack[0])
+            if best_match_defense and best_match_defense[1] > 70:
+                defense_info = get_player_rank_info(WAR_SHEET_ID, "dragon_defense_rank", best_match_defense[0])
+        
         title = f"Dragon Ranks: {name}"
         formatted_info = [f"## {title}"]
         
         if attack_info or defense_info:
+            player_name = attack_info.get("Player Name", "N/A") if attack_info else defense_info.get("Player Name", "N/A")
             troop = attack_info.get("Troop", "N/A") if attack_info else defense_info.get("Troop", "N/A")
             dragon_level = attack_info.get("Dragon Level", "N/A") if attack_info else defense_info.get("Dragon Level", "N/A")
+            formatted_info.append(f"Player Name: {player_name}")
             formatted_info.append(f"Troop: {troop}")
             formatted_info.append(f"Dragon Level: {dragon_level}")
         
@@ -359,11 +383,21 @@ async def rank(ctx: CommandContext, type: str, name: str):
     else:
         rank_type = rank_types.get(type)
         player_info = get_player_rank_info(WAR_SHEET_ID, rank_type, name.strip())  # Remove leading and trailing spaces
+        
+        # Soft match if no exact match found
+        if not player_info:
+            soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(WAR_SHEET_ID, rank_type)], scorer=fuzz.token_sort_ratio)
+            best_match = soft_matches[0] if soft_matches else None
+            if best_match and best_match[1] > 70:
+                player_info = get_player_rank_info(WAR_SHEET_ID, rank_type, best_match[0])
+        
         if player_info:
             title = f"{type.replace('-', ' ').title()} Ranks: {name}"
             formatted_info = [f"## {title}"]
             
+            player_name = player_info.get("Player Name", "N/A")
             troop = player_info.get("Troop", "N/A")
+            formatted_info.append(f"Player Name: {player_name}")
             formatted_info.append(f"Troop: {troop}")
             
             base_info = [f"{key.replace('Base', '').strip()}: {math.ceil(value):,}" if isinstance(value, (int, float)) and abs(value) >= 1000 and math.isfinite(value) else f"{key.replace('Base', '').strip()}: {value}" for key, value in player_info.items() if "Base" in key]
@@ -390,12 +424,12 @@ async def rank(ctx: CommandContext, type: str, name: str):
             
             await ctx.send("\n".join(formatted_info))
         else:
-            await ctx.send(f"## Oops, this is embarrassing.. \n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
+            await ctx.send(f"## Oops, this is embarrassing..\n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
 
 # LIST RANKS command
 @client.command(
     name="list-ranks",
-    description="List all players' ranks and scores for different categories. Use limit to display a specific number of players.",
+    description="List all players' ranks and scores for different categories.",
     options=[
         {
             "name": "type",
@@ -480,7 +514,7 @@ async def list_ranks(ctx: CommandContext, type: str, category: str, limit: int =
 # LIST RANKS DRAGON command
 @client.command(
     name="list-ranks-dragon",
-    description="List all players' dragon ranks and scores. Use limit to display a specific number of players.",
+    description="List all players' dragon ranks and scores.",
     options=[
         {
             "name": "type",
