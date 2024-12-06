@@ -6,6 +6,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import math
 import os 
 from dotenv import load_dotenv
+from fuzzywuzzy import fuzz, process
 
 load_dotenv()
 
@@ -231,7 +232,7 @@ async def roster_position(ctx: CommandContext, name: str):
             print(f"Error sending response: {e}")
             await ctx.send(f"An error occurred while sending the response for {name}. Please try again.")
     else:
-        await ctx.send(f"## Oops, this is embarassing.. \n\nPlayer not found: **{name}**.\nPlease check the spelling and try again.")
+        await ctx.send(f"## Oops, this is embarrassing.. \n\nPlayer not found: **{name}**.\nPlease check the spelling and try again.")
 
 # Combined STATS command
 @client.command(
@@ -288,7 +289,7 @@ async def stats(ctx: CommandContext, type: str, name: str):
             formatted_info.append(f"{formatted_key}: {formatted_value}")
         await ctx.send(f"# {title}:\n" + "\n".join(formatted_info))
     else:
-        await ctx.send(f"## Oops, this is embarassing.. \n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
+        await ctx.send(f"## Oops, this is embarrassing.. \n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
 
 # Combined RANK command
 @client.command(
@@ -389,7 +390,7 @@ async def rank(ctx: CommandContext, type: str, name: str):
             
             await ctx.send("\n".join(formatted_info))
         else:
-            await ctx.send(f"## Oops, this is embarassing.. \n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
+            await ctx.send(f"## Oops, this is embarrassing.. \n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
 
 # Combined LIST RANKS command for attack and defense
 @client.command(
@@ -767,7 +768,7 @@ async def stats_history(ctx: CommandContext, player_name: str, category: str, li
                 formatted_info.append(f"## Editor Notes:\n{entry['Editor Notes']}")
             await ctx.send(f"# {title}:\n" + "\n".join(formatted_info))
     else:
-        await ctx.send(f"## Oops, this is embarassing.. \n\nNo entries found for: **{player_name}**.\nPlease check the spelling and try again.")
+        await ctx.send(f"## Oops, this is embarrassing.. \n\nNo entries found for: **{player_name}**.\nPlease check the spelling and try again.")
 
 # KEEP-LOGISTICS command
 @client.command(
@@ -820,9 +821,9 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
             await ctx.send(message)
     else:
         if keep_name:
-            await ctx.send(f"## Oops, this is embarassing.. \n\nNo entries found for: **{keep_name}**.\nPlease check the spelling and try again.")
+            await ctx.send(f"## Oops, this is embarrassing.. \n\nNo entries found for: **{keep_name}**.\nPlease check the spelling and try again.")
         else:
-            await ctx.send(f"## Oops, this is embarassing.. \n\nNo entries found for: **{discord_name}**.\nPlease check the spelling and try again.")
+            await ctx.send(f"## Oops, this is embarrassing.. \n\nNo entries found for: **{discord_name}**.\nPlease check the spelling and try again.")
 
 # RCA-INFO command
 @client.command(
@@ -840,11 +841,20 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
 async def rca_info(ctx: CommandContext, name: str):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
     rca_list = fetch_sheet_data(RCA_SHEET_ID, "bot_rca_info")
+    
+    # Exact match
     entries = [record for record in rca_list if str(record['Name']).lower() == name.lower()]
 
+    # Soft match if no exact match found
+    if not entries:
+        soft_matches = process.extract(name, [record['Name'] for record in rca_list], scorer=fuzz.token_sort_ratio)
+        best_match = soft_matches[0] if soft_matches else None
+        if best_match and best_match[1] > 70:  # Threshold for a good match
+            entries = [record for record in rca_list if record['Name'] == best_match[0]]
+
     if entries:
-        for entry in entries:
-            title = f"RCA Info: {entry['Name']}"
+        for i, entry in enumerate(entries, start=1):
+            title = f"RCA Info {i}: {entry['Name']}"
             subtitle = f"Type: {entry['Type']}\nRein Cap: {entry['Rein Cap']}\nPower Level: {entry['Power Level']}"
             details = (
                 f"**Email**: \n{entry['Email']}\n\n"
@@ -857,7 +867,7 @@ async def rca_info(ctx: CommandContext, name: str):
             message = f"## {title}\n{subtitle}\n{'--' * 10}\n{details}"
             await ctx.send(message)
     else:
-        await ctx.send(f"## Oops, this is embarassing.. \n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
+        await ctx.send(f"## Oops, this is embarrassing..\n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
 
 # RCA-LOGS command
 @client.command(
