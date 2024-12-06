@@ -572,10 +572,10 @@ async def list_name_changes(ctx: CommandContext):
     else:
         await ctx.send("No recent name changes found.")
 
-# ROSTER-STATS command
+# ROSTER-RANKS command
 @client.command(
-    name="roster-stats",
-    description="Fetch the stats for a specific team and category.",
+    name="roster-ranks",
+    description="Fetch the ranks for a specific team and category.",
     options=[
         {
             "name": "team",
@@ -614,7 +614,7 @@ async def list_name_changes(ctx: CommandContext):
         },
     ],
 )
-async def roster_stats(ctx: CommandContext, team: str, category: str, defense_type: str = None):
+async def roster_ranks(ctx: CommandContext, team: str, category: str, defense_type: str = None):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
 
     if category != "troops_defense" and defense_type:
