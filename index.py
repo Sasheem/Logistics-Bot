@@ -291,7 +291,7 @@ async def stats(ctx: CommandContext, type: str, name: str):
     else:
         await ctx.send(f"## Oops, this is embarrassing.. \n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
 
-# Combined RANK command
+# RANK command
 @client.command(
     name="rank",
     description="Find a player's rank and score for different categories.",
@@ -392,7 +392,7 @@ async def rank(ctx: CommandContext, type: str, name: str):
         else:
             await ctx.send(f"## Oops, this is embarrassing.. \n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
 
-# Combined LIST RANKS command for attack and defense
+# LIST RANKS command
 @client.command(
     name="list-ranks",
     description="List all players' ranks and scores for different categories. Use limit to display a specific number of players.",
@@ -477,7 +477,7 @@ async def list_ranks(ctx: CommandContext, type: str, category: str, limit: int =
     else:
         await ctx.send("No player data found.")
 
-# Separate LIST RANKS DRAGON command
+# LIST RANKS DRAGON command
 @client.command(
     name="list-ranks-dragon",
     description="List all players' dragon ranks and scores. Use limit to display a specific number of players.",
