@@ -395,7 +395,7 @@ async def rank(ctx: CommandContext, type: str, name: str):
 # Combined LIST RANKS command for attack and defense
 @client.command(
     name="list-ranks",
-    description="List all players' ranks and scores for different categories.",
+    description="List all players' ranks and scores for different categories. Use limit to display a specific number of players.",
     options=[
         {
             "name": "type",
