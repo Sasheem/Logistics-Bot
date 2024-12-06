@@ -797,10 +797,28 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
         await ctx.send("Please provide either a Keep name or a Discord name, not both.")
         return
 
+    entries = []
+    name_type = ""
     if keep_name:
+        name_type = "keep name"
+        # Exact match
         entries = [record for record in keeps_list if str(record['Main Keep Name']).lower() == keep_name.lower()]
+        # Soft match if no exact match found
+        if not entries:
+            soft_matches = process.extract(keep_name, [record['Main Keep Name'] for record in keeps_list], scorer=fuzz.token_sort_ratio)
+            best_match = soft_matches[0] if soft_matches else None
+            if best_match and best_match[1] > 70:  # Threshold for a good match
+                entries = [record for record in keeps_list if record['Main Keep Name'] == best_match[0]]
     elif discord_name:
+        name_type = "discord username"
+        # Exact match
         entries = [record for record in keeps_list if str(record['Discord Name']).lower() == discord_name.lower()]
+        # Soft match if no exact match found
+        if not entries:
+            soft_matches = process.extract(discord_name, [record['Discord Name'] for record in keeps_list], scorer=fuzz.token_sort_ratio)
+            best_match = soft_matches[0] if soft_matches else None
+            if best_match and best_match[1] > 70:  # Threshold for a good match
+                entries = [record for record in keeps_list if record['Discord Name'] == best_match[0]]
     else:
         await ctx.send("Please provide either a Keep name or a Discord name.")
         return
@@ -821,9 +839,9 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
             await ctx.send(message)
     else:
         if keep_name:
-            await ctx.send(f"## Oops, this is embarrassing.. \n\nNo entries found for: **{keep_name}**.\nPlease check the spelling and try again.")
+            await ctx.send(f"## Oops, this is embarrassing..\n\nSearched by {name_type}.\nNo entries found for: **{keep_name}**.\nPlease check the spelling and try again.")
         else:
-            await ctx.send(f"## Oops, this is embarrassing.. \n\nNo entries found for: **{discord_name}**.\nPlease check the spelling and try again.")
+            await ctx.send(f"## Oops, this is embarrassing..\n\nSearched by {name_type}.\nNo entries found for: **{discord_name}**.\nPlease check the spelling and try again.")
 
 # RCA-INFO command
 @client.command(
