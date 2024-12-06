@@ -477,10 +477,10 @@ async def list_ranks(ctx: CommandContext, type: str, category: str, limit: int =
     else:
         await ctx.send("No player data found.")
 
-# Separate LIST DRAGON RANKS command
+# Separate LIST RANKS DRAGON command
 @client.command(
-    name="list-dragon-ranks",
-    description="List all players' dragon ranks and scores.",
+    name="list-ranks-dragon",
+    description="List all players' dragon ranks and scores. Use limit to display a specific number of players.",
     options=[
         {
             "name": "type",
@@ -500,7 +500,7 @@ async def list_ranks(ctx: CommandContext, type: str, category: str, limit: int =
         },
     ],
 )
-async def list_dragon_ranks(ctx: CommandContext, type: str, limit: int = None):
+async def list_ranks_dragon(ctx: CommandContext, type: str, limit: int = None):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
     rank_types = {
         "dragon-attack": "dragon_attack_rank",
