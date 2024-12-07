@@ -7,6 +7,9 @@ import math
 import os 
 from dotenv import load_dotenv
 from fuzzywuzzy import fuzz, process
+import time
+import random
+from gspread.exceptions import APIError
 
 load_dotenv()
 
@@ -44,6 +47,23 @@ scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/au
 creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
 client_gs = gspread.authorize(creds)
 
+# Global cache
+cache = {
+    "data": {},
+    "timestamp": 0
+}
+
+CACHE_DURATION = 300  # Cache duration in seconds (e.g., 5 minutes)
+
+def fetch_data_with_cache(spreadsheet_id, sheet_name):
+    current_time = time.time()
+    if sheet_name not in cache["data"] or (current_time - cache["timestamp"]) > CACHE_DURATION:
+        # Fetch new data from the API
+        sheet = client_gs.open_by_key(spreadsheet_id).worksheet(sheet_name)
+        cache["data"][sheet_name] = sheet.get_all_records()
+        cache["timestamp"] = current_time
+    return cache["data"][sheet_name]
+
 # Function to get all players info from a Google Sheets tab
 def get_all_players_info(spreadsheet_id, sheet_name):
     # sheet = client_gs.open('War Sheet - WTF').worksheet(sheet_name)
@@ -72,15 +92,15 @@ def get_player_rank_info(spreadsheet_id, rank_type, player_name):
             return row
     return None
 
-def get_hierarchy_info_from_sheet(sheet, player_name, team_name):
-    data = sheet.get_all_records()
+# Helper functions
+def get_hierarchy_info_from_sheet(data, player_name, team_name):
     hierarchy = {"Team": team_name, "T1": None, "T2": None, "T3": None, "T4": None}
     current_t1 = current_t2 = current_t3 = None
-    player_name = player_name.strip()  # Remove leading and trailing spaces
+    player_name = str(player_name).strip()  # Convert to string and remove leading and trailing spaces
 
     for row in data:
         position = row[f'Position {team_name}']
-        name = row[f'Name {team_name}']
+        name = str(row[f'Name {team_name}']).strip()  # Convert to string and remove leading and trailing spaces
         if position == "T1":
             current_t1 = name
             current_t2 = current_t3 = None  # Reset T2 and T3 when a new T1 is found
@@ -89,7 +109,7 @@ def get_hierarchy_info_from_sheet(sheet, player_name, team_name):
             current_t3 = None  # Reset T3 when a new T2 is found
         elif position == "T3":
             current_t3 = name
-        if isinstance(name, str) and name.strip().lower() == player_name.lower():  # Case-insensitive comparison
+        if name.lower() == player_name.lower():  # Case-insensitive comparison
             hierarchy["T1"] = current_t1
             hierarchy["T2"] = current_t2
             hierarchy["T3"] = current_t3
@@ -108,8 +128,8 @@ def get_hierarchy_info_from_sheet(sheet, player_name, team_name):
 def get_hierarchy_info(spreadsheet_id, player_name):
     sheet_names = ['WHSKY', 'TANGO', 'FXTRT']  # List of sheet names
     for sheet_name in sheet_names:
-        sheet = client_gs.open_by_key(spreadsheet_id).worksheet(sheet_name)
-        hierarchy_info = get_hierarchy_info_from_sheet(sheet, player_name, sheet_name)
+        data = fetch_data_with_cache(spreadsheet_id, sheet_name)
+        hierarchy_info = get_hierarchy_info_from_sheet(data, str(player_name), sheet_name)
         if hierarchy_info:
             return hierarchy_info  # Return the hierarchy info if the player is found
 
@@ -213,8 +233,21 @@ async def team_overview(ctx: CommandContext, category: str):
 async def roster_position(ctx: CommandContext, name: str):
     await ctx.defer()  # Defer the interaction to give more time
     spreadsheet_id = WAR_SHEET_ID
-    hierarchy_info = get_hierarchy_info(spreadsheet_id, name)
-    if hierarchy_info["T1"]:
+    sheet_names = ['WHSKY', 'TANGO', 'FXTRT']
+    hierarchy_info = get_hierarchy_info(spreadsheet_id, str(name).strip())  # Convert to string and remove leading and trailing spaces
+
+    # Soft match if no exact match found
+    if not hierarchy_info or not hierarchy_info["T1"]:
+        sheet_names = ['WHSKY', 'TANGO', 'FXTRT']
+        for sheet_name in sheet_names:
+            data = fetch_data_with_cache(spreadsheet_id, sheet_name)
+            soft_matches = process.extract(str(name), [str(entry[f'Name {sheet_name}']) for entry in data], scorer=fuzz.token_sort_ratio)
+            best_match = soft_matches[0] if soft_matches else None
+            if best_match and best_match[1] > 70:
+                hierarchy_info = get_hierarchy_info(spreadsheet_id, best_match[0])
+                break
+
+    if hierarchy_info and hierarchy_info["T1"]:
         response = f"**Roster Position for {name}:**\n"
         if hierarchy_info["Team"]:
             response += f"Team: {hierarchy_info['Team']}\n"
@@ -232,7 +265,7 @@ async def roster_position(ctx: CommandContext, name: str):
             print(f"Error sending response: {e}")
             await ctx.send(f"An error occurred while sending the response for {name}. Please try again.")
     else:
-        await ctx.send(f"## Oops, this is embarrassing.. \n\nPlayer not found: **{name}**.\nPlease check the spelling and try again.")
+        await ctx.send(f"## Oops, this is embarrassing..\n\nPlayer not found: **{name}**.\nPlease check the spelling and try again.")
 
 # STATS command
 @client.command(
