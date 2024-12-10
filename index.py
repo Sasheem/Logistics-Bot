@@ -24,6 +24,7 @@ from commands.stats_power import stats_power
 from commands.rank import rank
 from commands.list_ranks import list_ranks
 from commands.list_ranks_dragon import list_ranks_dragon
+from commands.list_ranks_roster import list_ranks_roster
 from commands.list_name_changes import list_name_changes
 
 load_dotenv()
@@ -198,15 +199,9 @@ async def on_ready():
     ],
 )(list_ranks_dragon)
 
-# LIST-NAME-CHANGES command
-@client.command(
-    name="list-name-changes",
-    description="Fetch the list of recent name changes.",
-)(list_name_changes)
-
 # ROSTER-RANKS command
 @client.command(
-    name="roster-ranks",
+    name="list-ranks-roster",
     description="Fetch the ranks for a specific team and category.",
     options=[
         {
@@ -245,72 +240,13 @@ async def on_ready():
             ],
         },
     ],
-)
-async def roster_ranks(ctx: CommandContext, team: str, category: str, defense_type: str = None):
-    await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
+)(list_ranks_roster)
 
-    if category != "troops_defense" and defense_type:
-        await ctx.send("The defense type option is only applicable for Troops Defense. Please select the correct category.")
-        return
-
-    if category == "troops_defense" and not defense_type:
-        await ctx.send("Please select a defense type (Base or Glam) for Troops Defense.")
-        return
-
-    tab_name = f"{team}_{category}"
-    team_stats_list = fetch_sheets_data(client_gs, WAR_SHEET_ID, tab_name)
-    formatted_info = ""
-    if team_stats_list:
-        if category == "troops_defense" and defense_type:
-            title = f"## {team.upper()} {defense_type.title()} Defense"
-        else:
-            title = f"## {team.upper()} {category.replace('_', ' ').title()}"
-        
-        if category in ["troops_attack", "dragon_attack", "dragon_defense"]:
-            header = "{:<20} {:<10} {:<10}\n".format("Player", "Troop", "Score")
-            separator = "=" * 36 + "\n"
-            formatted_info = f"{title}\n\n```\n" + header + separator
-        elif category == "troops_defense":
-            if defense_type == "base":
-                header = "{:<20} {:<10} {:<10}\n".format("Player", "Troop", "Base")
-            elif defense_type == "glam":
-                header = "{:<20} {:<10} {:<10}\n".format("Player", "Troop", "Glam")
-            separator = "=" * 36 + "\n"
-            formatted_info = f"{title}\n\n```\n" + header + separator
-        elif category in ["rally_caps", "rein_caps"]:
-            header = "{:<20} {:<10} {:<10}\n".format("Player", "Troop", "Cap")
-            separator = "=" * 36 + "\n"
-            formatted_info = f"{title}\n\n```\n" + header + separator
-
-        messages = []
-        current_message = formatted_info
-
-        for entry in team_stats_list:
-            player_info = ""
-            if category in ["troops_attack", "dragon_attack", "dragon_defense"]:
-                player_info = "{:<20} {:<10} {:<10}\n".format(entry['Player'], entry['Troop'], entry['Score'])
-            elif category == "troops_defense":
-                if defense_type == "base":
-                    player_info = "{:<20} {:<10} {:<10}\n".format(entry['Player'], entry['Troop'], entry['Base'])
-                elif defense_type == "glam":
-                    player_info = "{:<20} {:<10} {:<10}\n".format(entry['Player'], entry['Troop'], entry['Glam'])
-            elif category in ["rally_caps", "rein_caps"]:
-                player_info = "{:<20} {:<10} {:<10}\n".format(entry['Player'], entry['Troop'], entry['Cap'])
-
-            if len(current_message) + len(player_info) + 3 > 2000:  # +3 for closing ```
-                current_message += "```"
-                messages.append(current_message)
-                current_message = "```\n" + header + separator + player_info
-            else:
-                current_message += player_info
-
-        current_message += "```"
-        messages.append(current_message)
-
-        for message in messages:
-            await ctx.send(message)
-    else:
-        await ctx.send(f"No data found for the specified team and category: {tab_name}")
+# LIST-NAME-CHANGES command
+@client.command(
+    name="list-name-changes",
+    description="Fetch the list of recent name changes.",
+)(list_name_changes)
 
 # STATS-HISTORY command
 @client.command(
