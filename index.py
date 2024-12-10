@@ -15,7 +15,7 @@ from commands.list_ranks_roster import list_ranks_roster
 from commands.list_name_changes import list_name_changes
 from commands.keep_logistics import keep_logistics
 from commands.rca_info import rca_info
-from commands.rca_logs import rca_logs
+from commands.list_rca_logs import list_rca_logs
 
 load_dotenv()
 
@@ -300,8 +300,8 @@ client = Client(token=TOKEN)
 
 # RCA-LOGS command
 @client.command(
-    name="rca-logs",
-    description="Fetch the RCA logs.",
+    name="list-rca-logs",
+    description="Fetch the list of RCA logs.",
     options=[
         {
             "name": "filter_type",
@@ -322,7 +322,7 @@ client = Client(token=TOKEN)
             "required": False,
         },
     ],
-)(rca_logs)
+)(list_rca_logs)
 
 # Event listener for when the bot is ready
 @client.event

@@ -3,7 +3,7 @@ from config.google_sheets import client_gs
 from config.constants import RCA_SHEET_ID
 from utils.fetch_sheets_data import fetch_sheets_data
 
-async def rca_logs(ctx: CommandContext, filter_type: str = "All", min_cap: int = 0):
+async def list_rca_logs(ctx: CommandContext, filter_type: str = "All", min_cap: int = 0):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
     rca_logs_list = fetch_sheets_data(client_gs, RCA_SHEET_ID, "bot_rca_info")
     if rca_logs_list:
@@ -24,12 +24,12 @@ async def rca_logs(ctx: CommandContext, filter_type: str = "All", min_cap: int =
             email = entry['Email'] or "n/a"
             password = entry['Password'] or "n/a"
             entry_info = (
+                f"{'-' * 30}\n"
                 f"**{name}**\n"
                 f"{rein_cap} | {type_} | {power_level}\n"
-                f"{'--' * 5}\n"
+                f"{'--' * 2}\n"
                 f"FB: {facebook_name}\n"
                 f"{email} | {password}\n"
-                + "-" * 30 + "\n"
             )
             if len(formatted_info) + len(entry_info) + 3 > 2000:  # 2000 is the Discord message limit
                 messages.append(formatted_info)
