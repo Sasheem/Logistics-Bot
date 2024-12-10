@@ -1,20 +1,25 @@
 import discord
 from interactions import Client, CommandContext
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 import math
 import os 
 from dotenv import load_dotenv
 from fuzzywuzzy import fuzz, process
-import time
-import random
-from gspread.exceptions import APIError
 
-# from config.google_sheets import client_gs
-from utils.fetch_sheets_data import fetch_sheet_data
+# Load the client
+from config.google_sheets import client_gs
+
+# Load the constants
+from config.constants import WAR_SHEET_ID, ATTACK_SHEET_ID, DEFENSE_SHEET_ID, DRAGON_SHEET_ID, ROSTER_SHEET_ID, RCA_SHEET_ID
+
+# Load the helpers
+from utils.fetch_sheets_data import fetch_sheets_data
 from utils.fetch_data_with_cache import fetch_data_with_cache
 from utils.fetch_roster_info import fetch_roster_info
 from utils.fetch_player_info import fetch_player_info
+
+# Load the commands
+from commands.team_overview import team_overview
+from commands.roster_position import roster_position
 
 load_dotenv()
 
@@ -24,31 +29,16 @@ environment = os.getenv('ENVIRONMENT', 'live')
 # Set the tokens based on the environment
 if environment == 'test':
     TOKEN = os.getenv('DISCORD_TOKEN_TEST')
-    credentials_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS_PATH_TEST')
-    # Normalize the credentials path 
-    credentials_path = os.path.normpath(credentials_path)
 else:
     TOKEN = os.getenv('DISCORD_TOKEN_LIVE')
-    credentials_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS_PATH_LIVE')
 
-# Google Sheet ID
-WAR_SHEET_ID = os.getenv('WAR_SHEET_ID')
-ATTACK_SHEET_ID = os.getenv('ATTACK_SHEET_ID')
-DEFENSE_SHEET_ID = os.getenv('DEFENSE_SHEET_ID')
-DRAGON_SHEET_ID = os.getenv('DRAGON_SHEET_ID')
-ROSTER_SHEET_ID = os.getenv('ROSTER_SHEET_ID')
-RCA_SHEET_ID = os.getenv('RCA_SHEET_ID')
-
+# Discord bot setup
 intents = discord.Intents.default()
 intents.message_content = True
 intents.messages = True
 client = Client(token=TOKEN)
 
-# Google Sheets setup
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
-client_gs = gspread.authorize(creds)
-
+# Event listener for when the bot is ready
 @client.event
 async def on_ready():
     print(f'We have logged in as {client.me}')
@@ -71,45 +61,7 @@ async def on_ready():
             ],
         },
     ],
-)
-async def team_overview(ctx: CommandContext, category: str):
-    await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-
-    tab_name = f"{category}_overview"
-    team_data = fetch_sheet_data(client_gs, WAR_SHEET_ID, tab_name)
-
-    if team_data:
-        title = f"{category.replace('_', ' ').title()} Overview"
-        formatted_info = [f"# {title}"]
-        
-        for entry in team_data:
-            formatted_info.append(f"## Total:  {entry['Submissions']}")
-            formatted_info.append(f"**-- Troop Types --**")
-            formatted_info.append(f"Infantry:  {entry['Infantry Totals']}")
-            formatted_info.append(f"Cavalry:  {entry['Cavalry Totals']}")
-            formatted_info.append(f"Range:  {entry['Range Totals']}")
-            formatted_info.append(f"Siege:  {entry['Siege Totals']}")
-            formatted_info.append(f"RCA:  {entry['RCA Totals']}")
-            formatted_info.append(f"**-- Troop Tiers --**")
-            formatted_info.append(f"T12s:  {entry['T12s Totals']}")
-            formatted_info.append(f"T11s:  {entry['T11s Totals']}")
-            formatted_info.append(f"T10s:  {entry['T10s Totals']}")
-            formatted_info.append(f"T9s:  {entry['T9s Totals']}")
-            formatted_info.append(f"T8s:  {entry['T8s Totals']}")
-            
-            if category in ["dragon_attack", "dragon_defense"]:
-                formatted_info.append(f"**-- Dragon Levels --**")
-                formatted_info.append(f"Lvl 69:  {entry['Lvl 69 Totals']}")
-                formatted_info.append(f"Lvl 65+:  {entry['Lvl 65+ Totals']}")
-                
-            if category in ["dragon_attack"]:
-                formatted_info.append(f"Lvl 41+:  {entry['Lvl 41+ Totals']}")
-            
-            formatted_info.append("\n")
-
-        await ctx.send("\n".join(formatted_info))
-    else:
-        await ctx.send("No data found for the specified category.")
+)(team_overview)
 
 # ROSTER POSITION command
 @client.command(
@@ -123,43 +75,7 @@ async def team_overview(ctx: CommandContext, category: str):
             "required": True,
         },
     ],
-)
-async def roster_position(ctx: CommandContext, name: str):
-    await ctx.defer()  # Defer the interaction to give more time
-    spreadsheet_id = WAR_SHEET_ID
-    sheet_names = ['WHSKY', 'TANGO', 'FXTRT']
-    roster_info = fetch_roster_info(client_gs, spreadsheet_id, str(name).strip())  # Convert to string and remove leading and trailing spaces
-
-    # Soft match if no exact match found
-    if not roster_info or not roster_info["T1"]:
-        sheet_names = ['WHSKY', 'TANGO', 'FXTRT']
-        for sheet_name in sheet_names:
-            data = fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name)
-            soft_matches = process.extract(str(name), [str(entry[f'Name {sheet_name}']) for entry in data], scorer=fuzz.token_sort_ratio)
-            best_match = soft_matches[0] if soft_matches else None
-            if best_match and best_match[1] > 70:
-                roster_info = fetch_roster_info(client_gs, spreadsheet_id, best_match[0])
-                break
-
-    if roster_info and roster_info["T1"]:
-        response = f"**Roster Position for {name}:**\n"
-        if roster_info["Team"]:
-            response += f"Team: {roster_info['Team']}\n"
-        if roster_info["T1"]:
-            response += f"T1: {roster_info['T1']}\n"
-        if roster_info["T2"]:
-            response += f"T2: {roster_info['T2']}\n"
-        if roster_info["T3"]:
-            response += f"T3: {roster_info['T3']}\n"
-        if roster_info["T4"]:
-            response += f"T4: {roster_info['T4']}\n"
-        try:
-            await ctx.send(response)
-        except Exception as e:
-            print(f"Error sending response: {e}")
-            await ctx.send(f"An error occurred while sending the response for {name}. Please try again.")
-    else:
-        await ctx.send(f"## Oops, this is embarrassing..\n\nPlayer not found: **{name}**.\nPlease check the spelling and try again.")
+)(roster_position)
 
 # STATS command
 @client.command(
@@ -199,7 +115,7 @@ async def stats(ctx: CommandContext, type: str, name: str):
 
     # Soft match if no exact match found
     if not player_info:
-        soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(client_gs, WAR_SHEET_ID, stats_type)], scorer=fuzz.token_sort_ratio)
+        soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_sheets_data(client_gs, WAR_SHEET_ID, stats_type)], scorer=fuzz.token_sort_ratio)
         best_match = soft_matches[0] if soft_matches else None
         if best_match and best_match[1] > 70:
             player_info = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, best_match[0])
@@ -268,8 +184,8 @@ async def rank(ctx: CommandContext, type: str, name: str):
         
         # Soft match if no exact match found
         if not attack_info and not defense_info:
-            soft_matches_attack = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(client_gs, WAR_SHEET_ID, "dragon_attack_rank")], scorer=fuzz.token_sort_ratio)
-            soft_matches_defense = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(client_gs, WAR_SHEET_ID, "dragon_defense_rank")], scorer=fuzz.token_sort_ratio)
+            soft_matches_attack = process.extract(name, [entry['Player Name'] for entry in fetch_sheets_data(client_gs, WAR_SHEET_ID, "dragon_attack_rank")], scorer=fuzz.token_sort_ratio)
+            soft_matches_defense = process.extract(name, [entry['Player Name'] for entry in fetch_sheets_data(client_gs, WAR_SHEET_ID, "dragon_defense_rank")], scorer=fuzz.token_sort_ratio)
             best_match_attack = soft_matches_attack[0] if soft_matches_attack else None
             best_match_defense = soft_matches_defense[0] if soft_matches_defense else None
             if best_match_attack and best_match_attack[1] > 70:
@@ -313,7 +229,7 @@ async def rank(ctx: CommandContext, type: str, name: str):
         
         # Soft match if no exact match found
         if not player_info:
-            soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(client_gs, WAR_SHEET_ID, rank_type)], scorer=fuzz.token_sort_ratio)
+            soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_sheets_data(client_gs, WAR_SHEET_ID, rank_type)], scorer=fuzz.token_sort_ratio)
             best_match = soft_matches[0] if soft_matches else None
             if best_match and best_match[1] > 70:
                 player_info = fetch_player_info(client_gs, WAR_SHEET_ID, rank_type, best_match[0])
@@ -587,7 +503,7 @@ async def roster_ranks(ctx: CommandContext, team: str, category: str, defense_ty
         return
 
     tab_name = f"{team}_{category}"
-    team_stats_list = fetch_sheet_data(client_gs, WAR_SHEET_ID, tab_name)
+    team_stats_list = fetch_sheets_data(client_gs, WAR_SHEET_ID, tab_name)
     formatted_info = ""
     if team_stats_list:
         if category == "troops_defense" and defense_type:
@@ -687,7 +603,7 @@ async def stats_history(ctx: CommandContext, player_name: str, category: str, li
         spreadsheet_id = DRAGON_SHEET_ID
         tab_name = "dragon_history"
 
-    player_stats_list = fetch_sheet_data(client_gs, spreadsheet_id, tab_name)
+    player_stats_list = fetch_sheets_data(client_gs, spreadsheet_id, tab_name)
     
     # Exact match
     player_entries = [entry for entry in player_stats_list if entry['Player'].lower() == player_name.lower()]
@@ -761,7 +677,7 @@ async def stats_history(ctx: CommandContext, player_name: str, category: str, li
 )
 async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_name: str = None):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    keeps_list = fetch_sheet_data(client_gs, ROSTER_SHEET_ID, "bot_keep_logistics")
+    keeps_list = fetch_sheets_data(client_gs, ROSTER_SHEET_ID, "bot_keep_logistics")
 
     if keep_name and discord_name:
         await ctx.send("Please provide either a Keep name or a Discord name, not both.")
@@ -828,7 +744,7 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
 )
 async def rca_info(ctx: CommandContext, name: str):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    rca_list = fetch_sheet_data(client_gs, RCA_SHEET_ID, "bot_rca_info")
+    rca_list = fetch_sheets_data(client_gs, RCA_SHEET_ID, "bot_rca_info")
     
     # Exact match
     entries = [record for record in rca_list if str(record['Name']).lower() == name.lower()]
@@ -864,7 +780,7 @@ async def rca_info(ctx: CommandContext, name: str):
 )
 async def rca_logs(ctx: CommandContext):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    rca_logs_list = fetch_sheet_data(client_gs, RCA_SHEET_ID, "bot_rca_info")
+    rca_logs_list = fetch_sheets_data(client_gs, RCA_SHEET_ID, "bot_rca_info")
     if rca_logs_list:
         messages = []
         chunk_counter = 1
