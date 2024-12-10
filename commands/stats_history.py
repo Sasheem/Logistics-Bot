@@ -1,4 +1,4 @@
-# commands/stats_power.py
+# commands/stats_history.py
 
 from interactions import CommandContext
 from fuzzywuzzy import process, fuzz
