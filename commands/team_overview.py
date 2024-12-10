@@ -1,6 +1,6 @@
 # commands/team_overview.py
 
-from interactions import Client, CommandContext
+from interactions import CommandContext
 from utils.fetch_sheets_data import fetch_sheets_data
 from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
