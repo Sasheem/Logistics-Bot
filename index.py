@@ -307,13 +307,19 @@ client = Client(token=TOKEN)
             "name": "filter_type",
             "description": "Filter the RCA logs by type",
             "type": 3,  # STRING type
-            "required": False,
+            "required": True,
             "choices": [
                 {"name": "All", "value": "All"},
                 {"name": "RCA", "value": "RCA"},
                 {"name": "Holder", "value": "Holder"},
                 {"name": "RCA Banner", "value": "RCA Banner"},
             ],
+        },
+        {
+            "name": "min_cap",
+            "description": "Minimum Rein Cap to filter the logs",
+            "type": 4,  # INTEGER type
+            "required": False,
         },
     ],
 )(rca_logs)

@@ -3,29 +3,31 @@ from config.google_sheets import client_gs
 from config.constants import RCA_SHEET_ID
 from utils.fetch_sheets_data import fetch_sheets_data
 
-async def rca_logs(ctx: CommandContext, filter_type: str = "All"):
+async def rca_logs(ctx: CommandContext, filter_type: str = "All", min_cap: int = 0):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
     rca_logs_list = fetch_sheets_data(client_gs, RCA_SHEET_ID, "bot_rca_info")
     if rca_logs_list:
         if filter_type != "All":
             rca_logs_list = [entry for entry in rca_logs_list if entry['Type'] == filter_type]
+        if min_cap > 0:
+            rca_logs_list = [entry for entry in rca_logs_list if convert_to_number(entry['Rein Cap']) > min_cap]
 
         messages = []
         chunk_counter = 1
         formatted_info = f">>> # RCA Logs {chunk_counter}\n## Filtered by: {filter_type}\n"
         for entry in rca_logs_list:
-            name = entry['Name']
-            rein_cap = entry['Rein Cap']
-            type_ = entry['Type']
-            power_level = entry['Power Level']
-            facebook_name = entry['Facebook Name']
-            email = entry['Email']
-            password = entry['Password']
+            name = entry['Name'] or "n/a"
+            rein_cap = entry['Rein Cap'] or "n/a"
+            type_ = entry['Type'] or "n/a"
+            power_level = entry['Power Level'] or "n/a"
+            facebook_name = entry['Facebook Name'] or "n/a"
+            email = entry['Email'] or "n/a"
+            password = entry['Password'] or "n/a"
             entry_info = (
-                f"**{name:<20}**\n"
+                f"**{name}**\n"
                 f"{rein_cap} | {type_} | {power_level}\n"
-                f"{'-' * 5}\n"
-                f"FB: {facebook_name:<20}\n"
+                f"{'--' * 5}\n"
+                f"FB: {facebook_name}\n"
                 f"{email} | {password}\n"
                 + "-" * 30 + "\n"
             )
@@ -41,3 +43,8 @@ async def rca_logs(ctx: CommandContext, filter_type: str = "All"):
             await ctx.send(message)
     else:
         await ctx.send("No RCA logs found.")
+
+def convert_to_number(value):
+    if isinstance(value, str) and value.endswith('K'):
+        return int(float(value[:-1]) * 1000)
+    return int(value)
