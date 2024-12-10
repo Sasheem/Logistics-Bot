@@ -22,6 +22,9 @@ from commands.team_overview import team_overview
 from commands.roster_position import roster_position
 from commands.stats_power import stats_power
 from commands.rank import rank
+from commands.list_ranks import list_ranks
+from commands.list_ranks_dragon import list_ranks_dragon
+from commands.list_name_changes import list_name_changes
 
 load_dotenv()
 
@@ -130,7 +133,6 @@ async def on_ready():
     ],
 )(rank)
 
-
 # LIST RANKS command
 @client.command(
     name="list-ranks",
@@ -170,51 +172,7 @@ async def on_ready():
             "required": False,
         },
     ],
-)
-async def list_ranks(ctx: CommandContext, type: str, category: str, limit: int = None):
-    await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    rank_types = {
-        "attack": f"team_rank_{category}",
-        "defense": f"team_defense_rank_{category}",
-    }
-    if category == "team":
-        rank_types = {
-            "attack": "team_rank",
-            "defense": "team_defense_rank",
-        }
-    rank_type = rank_types.get(type)
-    players_info = fetch_data_with_cache(client_gs, WAR_SHEET_ID, rank_type)
-    if players_info:
-        if limit:
-            players_info = players_info[:limit]
-        title = f"{type.capitalize()} {category.capitalize()} Ranks"
-        subtitle = f"**Showing top {limit} players**" if limit else ""
-        header = "{:<20} {:<10} {:<10}\n".format(
-            "Player Name", "Score", "Rank"
-        )
-        separator = "=" * 36 + "\n"
-        formatted_info = f"# {title}\n{subtitle}\n```\n" + header + separator
-        messages = []
-        current_message = formatted_info
-
-        for player in players_info:
-            player_info = "{:<20} {:<10} {:<10}\n".format(
-                player["Player Name"], player["Score"], player["Rank"]
-            )
-            if len(current_message) + len(player_info) + 3 > 2000:  # +3 for closing ```
-                current_message += "```"
-                messages.append(current_message)
-                current_message = "```\n" + header + separator + player_info
-            else:
-                current_message += player_info
-
-        current_message += "```"
-        messages.append(current_message)
-
-        for message in messages:
-            await ctx.send(message)
-    else:
-        await ctx.send("No player data found.")
+)(list_ranks)
 
 # LIST RANKS DRAGON command
 @client.command(
@@ -238,78 +196,13 @@ async def list_ranks(ctx: CommandContext, type: str, category: str, limit: int =
             "required": False,
         },
     ],
-)
-async def list_ranks_dragon(ctx: CommandContext, type: str, limit: int = None):
-    await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    rank_types = {
-        "dragon-attack": "dragon_attack_rank",
-        "dragon-defense": "dragon_defense_rank",
-    }
-    rank_type = rank_types.get(type)
-    players_info = fetch_data_with_cache(client_gs, WAR_SHEET_ID, rank_type)
-    if players_info:
-        if limit:
-            players_info = players_info[:limit]
-        title = f"{type.replace('-', ' ').title()} Ranks"
-        subtitle = f"Showing top {limit} players" if limit else ""
-        header = "{:<20} {:<10} {:<10}\n".format(
-            "Player Name", "Score", "Rank"
-        )
-        separator = "=" * 36 + "\n"
-        formatted_info = f"# {title} \n{subtitle}\n```\n" + header + separator
-        messages = []
-        current_message = formatted_info
-
-        for player in players_info:
-            player_info = "{:<20} {:<10} {:<10}\n".format(
-                player["Player Name"], player["Score"], player["Rank"]
-            )
-            if len(current_message) + len(player_info) + 3 > 2000:  # +3 for closing ```
-                current_message += "```"
-                messages.append(current_message)
-                current_message = "```\n" + header + separator + player_info
-            else:
-                current_message += player_info
-
-        current_message += "```"
-        messages.append(current_message)
-
-        for message in messages:
-            await ctx.send(message)
-    else:
-        await ctx.send("No player data found.")
+)(list_ranks_dragon)
 
 # LIST-NAME-CHANGES command
 @client.command(
     name="list-name-changes",
     description="Fetch the list of recent name changes.",
-)
-async def list_name_changes(ctx: CommandContext):
-    await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    name_changes_list = fetch_data_with_cache(client_gs, WAR_SHEET_ID, "recent_name_changes")
-    if name_changes_list:
-        header = "{:<20} {:<20}\n".format("Old Name", "New Name")
-        separator = "=" * 36 + "\n"
-        formatted_info = "```\n" + header + separator
-        messages = []
-        for entry in name_changes_list:
-            date = entry['Date']
-            old_name = entry['Old Name']
-            new_name = entry['New Name']
-            entry_info = f"{date}\n{old_name:<20} {new_name:<20}\n" + "-" * 30 + "\n"
-            if len(formatted_info) + len(entry_info) + 3 > 2000:  # 2000 is the Discord message limit
-                formatted_info += "```"
-                messages.append(formatted_info)
-                formatted_info = "```\n" + entry_info
-            else:
-                formatted_info += entry_info
-        formatted_info += "```"
-        messages.append(formatted_info)
-        
-        for message in messages:
-            await ctx.send(message)
-    else:
-        await ctx.send("No recent name changes found.")
+)(list_name_changes)
 
 # ROSTER-RANKS command
 @client.command(
