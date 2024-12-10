@@ -1,5 +1,4 @@
 import discord
-from discord.ext import commands
 from interactions import Client, CommandContext
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -11,14 +10,18 @@ import time
 import random
 from gspread.exceptions import APIError
 
+# from config.google_sheets import client_gs
+from utils.fetch_sheets_data import fetch_sheet_data
+from utils.fetch_data_with_cache import fetch_data_with_cache
+from utils.fetch_roster_info import fetch_roster_info
+from utils.fetch_player_info import fetch_player_info
+
 load_dotenv()
 
-# Discord bot token
-# DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 # Determine the environment
 environment = os.getenv('ENVIRONMENT', 'live')
 
-# Set the token based on the environment
+# Set the tokens based on the environment
 if environment == 'test':
     TOKEN = os.getenv('DISCORD_TOKEN_TEST')
     credentials_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS_PATH_TEST')
@@ -39,121 +42,12 @@ RCA_SHEET_ID = os.getenv('RCA_SHEET_ID')
 intents = discord.Intents.default()
 intents.message_content = True
 intents.messages = True
-bot = commands.Bot(command_prefix="!", intents=intents)
 client = Client(token=TOKEN)
 
 # Google Sheets setup
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
 client_gs = gspread.authorize(creds)
-
-# Global cache
-cache = {
-    "data": {},
-    "timestamp": 0
-}
-
-CACHE_DURATION = 300  # Cache duration in seconds (e.g., 5 minutes)
-
-def fetch_data_with_cache(spreadsheet_id, sheet_name):
-    current_time = time.time()
-    if sheet_name not in cache["data"] or (current_time - cache["timestamp"]) > CACHE_DURATION:
-        # Fetch new data from the API
-        sheet = client_gs.open_by_key(spreadsheet_id).worksheet(sheet_name)
-        cache["data"][sheet_name] = sheet.get_all_records()
-        cache["timestamp"] = current_time
-    return cache["data"][sheet_name]
-
-# Function to get all players info from a Google Sheets tab
-def get_all_players_info(spreadsheet_id, sheet_name):
-    # sheet = client_gs.open('War Sheet - WTF').worksheet(sheet_name)
-    sheet = client_gs.open_by_key(spreadsheet_id).worksheet(sheet_name)
-    return sheet.get_all_records()
-
-# Function to get player stats info based on stats type
-def get_player_stats_info(spreadsheet_id, stats_type, player_name):
-    sheet = client_gs.open_by_key(spreadsheet_id).worksheet(stats_type)
-    data = sheet.get_all_records()
-    player_name = player_name.strip()  # Remove leading and trailing spaces
-
-    for row in data:
-        if isinstance(row['Player Name'], str) and row['Player Name'].strip().lower() == player_name.lower():  # Case-insensitive comparison
-            return row
-    return None
-
-# Function to get player rank info based on rank type
-def get_player_rank_info(spreadsheet_id, rank_type, player_name):
-    sheet = client_gs.open_by_key(spreadsheet_id).worksheet(rank_type)
-    data = sheet.get_all_records()
-    player_name = player_name.strip()  # Remove leading and trailing spaces
-
-    for row in data:
-        if isinstance(row['Player Name'], str) and row['Player Name'].strip().lower() == player_name.lower():  # Case-insensitive comparison
-            return row
-    return None
-
-# Helper functions
-def get_hierarchy_info_from_sheet(data, player_name, team_name):
-    hierarchy = {"Team": team_name, "T1": None, "T2": None, "T3": None, "T4": None}
-    current_t1 = current_t2 = current_t3 = None
-    player_name = str(player_name).strip()  # Convert to string and remove leading and trailing spaces
-
-    for row in data:
-        position = row[f'Position {team_name}']
-        name = str(row[f'Name {team_name}']).strip()  # Convert to string and remove leading and trailing spaces
-        if position == "T1":
-            current_t1 = name
-            current_t2 = current_t3 = None  # Reset T2 and T3 when a new T1 is found
-        elif position == "T2":
-            current_t2 = name
-            current_t3 = None  # Reset T3 when a new T2 is found
-        elif position == "T3":
-            current_t3 = name
-        if name.lower() == player_name.lower():  # Case-insensitive comparison
-            hierarchy["T1"] = current_t1
-            hierarchy["T2"] = current_t2
-            hierarchy["T3"] = current_t3
-            hierarchy["T4"] = name
-            if position == "T1":
-                hierarchy["T2"] = hierarchy["T3"] = hierarchy["T4"] = None
-            elif position == "T2":
-                hierarchy["T3"] = hierarchy["T4"] = None
-            elif position == "T3":
-                hierarchy["T4"] = None
-            return hierarchy  # Return immediately when the player is found
-
-    return None  # Return None if the player is not found in this sheet
-
-# Function to get hierarchy information for a player from multiple sheets
-def get_hierarchy_info(spreadsheet_id, player_name):
-    sheet_names = ['WHSKY', 'TANGO', 'FXTRT']  # List of sheet names
-    for sheet_name in sheet_names:
-        data = fetch_data_with_cache(spreadsheet_id, sheet_name)
-        hierarchy_info = get_hierarchy_info_from_sheet(data, str(player_name), sheet_name)
-        if hierarchy_info:
-            return hierarchy_info  # Return the hierarchy info if the player is found
-
-    return {"Team": None, "T1": None, "T2": None, "T3": None, "T4": None}  # Return empty hierarchy if the player is not found in any sheet
-
-# Function to get recent name changes from Google Sheets
-def get_recent_name_changes():
-    sheet = client_gs.open_by_key(WAR_SHEET_ID).worksheet('recent_name_changes')
-    data = sheet.get_all_records()
-    return data
-
-# Function to get team stats from Google Sheets
-# TO BE CONVERTED TO THE FUNCTION BELOW
-def get_sheet_records(spreadsheet_id, tab_name):
-    sheet = client_gs.open_by_key(spreadsheet_id).worksheet(tab_name)
-    data = sheet.get_all_records()
-    return data
-
-# Function to fetch sheet data from Google Sheets
-def fetch_sheet_data(spreadsheet_id, tab_name):
-    # sheet = client_gs.open(sheet_name).worksheet(tab_name)
-    sheet = client_gs.open_by_key(spreadsheet_id).worksheet(tab_name);
-    data = sheet.get_all_records()
-    return data
 
 @client.event
 async def on_ready():
@@ -182,7 +76,7 @@ async def team_overview(ctx: CommandContext, category: str):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
 
     tab_name = f"{category}_overview"
-    team_data = fetch_sheet_data(WAR_SHEET_ID, tab_name)
+    team_data = fetch_sheet_data(client_gs, WAR_SHEET_ID, tab_name)
 
     if team_data:
         title = f"{category.replace('_', ' ').title()} Overview"
@@ -217,7 +111,7 @@ async def team_overview(ctx: CommandContext, category: str):
     else:
         await ctx.send("No data found for the specified category.")
 
-# HIERARCHY command
+# ROSTER POSITION command
 @client.command(
     name="roster-position",
     description="Get the roster position for a player.",
@@ -234,31 +128,31 @@ async def roster_position(ctx: CommandContext, name: str):
     await ctx.defer()  # Defer the interaction to give more time
     spreadsheet_id = WAR_SHEET_ID
     sheet_names = ['WHSKY', 'TANGO', 'FXTRT']
-    hierarchy_info = get_hierarchy_info(spreadsheet_id, str(name).strip())  # Convert to string and remove leading and trailing spaces
+    roster_info = fetch_roster_info(client_gs, spreadsheet_id, str(name).strip())  # Convert to string and remove leading and trailing spaces
 
     # Soft match if no exact match found
-    if not hierarchy_info or not hierarchy_info["T1"]:
+    if not roster_info or not roster_info["T1"]:
         sheet_names = ['WHSKY', 'TANGO', 'FXTRT']
         for sheet_name in sheet_names:
-            data = fetch_data_with_cache(spreadsheet_id, sheet_name)
+            data = fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name)
             soft_matches = process.extract(str(name), [str(entry[f'Name {sheet_name}']) for entry in data], scorer=fuzz.token_sort_ratio)
             best_match = soft_matches[0] if soft_matches else None
             if best_match and best_match[1] > 70:
-                hierarchy_info = get_hierarchy_info(spreadsheet_id, best_match[0])
+                roster_info = fetch_roster_info(client_gs, spreadsheet_id, best_match[0])
                 break
 
-    if hierarchy_info and hierarchy_info["T1"]:
+    if roster_info and roster_info["T1"]:
         response = f"**Roster Position for {name}:**\n"
-        if hierarchy_info["Team"]:
-            response += f"Team: {hierarchy_info['Team']}\n"
-        if hierarchy_info["T1"]:
-            response += f"T1: {hierarchy_info['T1']}\n"
-        if hierarchy_info["T2"]:
-            response += f"T2: {hierarchy_info['T2']}\n"
-        if hierarchy_info["T3"]:
-            response += f"T3: {hierarchy_info['T3']}\n"
-        if hierarchy_info["T4"]:
-            response += f"T4: {hierarchy_info['T4']}\n"
+        if roster_info["Team"]:
+            response += f"Team: {roster_info['Team']}\n"
+        if roster_info["T1"]:
+            response += f"T1: {roster_info['T1']}\n"
+        if roster_info["T2"]:
+            response += f"T2: {roster_info['T2']}\n"
+        if roster_info["T3"]:
+            response += f"T3: {roster_info['T3']}\n"
+        if roster_info["T4"]:
+            response += f"T4: {roster_info['T4']}\n"
         try:
             await ctx.send(response)
         except Exception as e:
@@ -301,14 +195,14 @@ async def stats(ctx: CommandContext, type: str, name: str):
         "dragon-defense": "dragon_defense_stats",
     }
     stats_type = stats_types.get(type)
-    player_info = get_player_stats_info(WAR_SHEET_ID, stats_type, name.strip())  # Remove leading and trailing spaces
+    player_info = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, name.strip())  # Remove leading and trailing spaces
 
     # Soft match if no exact match found
     if not player_info:
-        soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(WAR_SHEET_ID, stats_type)], scorer=fuzz.token_sort_ratio)
+        soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(client_gs, WAR_SHEET_ID, stats_type)], scorer=fuzz.token_sort_ratio)
         best_match = soft_matches[0] if soft_matches else None
         if best_match and best_match[1] > 70:
-            player_info = get_player_stats_info(WAR_SHEET_ID, stats_type, best_match[0])
+            player_info = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, best_match[0])
 
     if player_info:
         title = f"{type.replace('-', ' ').title()} Stats"
@@ -369,19 +263,19 @@ async def rank(ctx: CommandContext, type: str, name: str):
     }
     
     if type == "dragon":
-        attack_info = get_player_rank_info(WAR_SHEET_ID, "dragon_attack_rank", name.strip())
-        defense_info = get_player_rank_info(WAR_SHEET_ID, "dragon_defense_rank", name.strip())
+        attack_info = fetch_player_info(client_gs, WAR_SHEET_ID, "dragon_attack_rank", name.strip())
+        defense_info = fetch_player_info(client_gs, WAR_SHEET_ID, "dragon_defense_rank", name.strip())
         
         # Soft match if no exact match found
         if not attack_info and not defense_info:
-            soft_matches_attack = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(WAR_SHEET_ID, "dragon_attack_rank")], scorer=fuzz.token_sort_ratio)
-            soft_matches_defense = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(WAR_SHEET_ID, "dragon_defense_rank")], scorer=fuzz.token_sort_ratio)
+            soft_matches_attack = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(client_gs, WAR_SHEET_ID, "dragon_attack_rank")], scorer=fuzz.token_sort_ratio)
+            soft_matches_defense = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(client_gs, WAR_SHEET_ID, "dragon_defense_rank")], scorer=fuzz.token_sort_ratio)
             best_match_attack = soft_matches_attack[0] if soft_matches_attack else None
             best_match_defense = soft_matches_defense[0] if soft_matches_defense else None
             if best_match_attack and best_match_attack[1] > 70:
-                attack_info = get_player_rank_info(WAR_SHEET_ID, "dragon_attack_rank", best_match_attack[0])
+                attack_info = fetch_player_info(client_gs, WAR_SHEET_ID, "dragon_attack_rank", best_match_attack[0])
             if best_match_defense and best_match_defense[1] > 70:
-                defense_info = get_player_rank_info(WAR_SHEET_ID, "dragon_defense_rank", best_match_defense[0])
+                defense_info = fetch_player_info(client_gs, WAR_SHEET_ID, "dragon_defense_rank", best_match_defense[0])
         
         title = f"Dragon Ranks: {name}"
         formatted_info = [f"## {title}"]
@@ -415,14 +309,14 @@ async def rank(ctx: CommandContext, type: str, name: str):
         await ctx.send("\n".join(formatted_info))
     else:
         rank_type = rank_types.get(type)
-        player_info = get_player_rank_info(WAR_SHEET_ID, rank_type, name.strip())  # Remove leading and trailing spaces
+        player_info = fetch_player_info(client_gs, WAR_SHEET_ID, rank_type, name.strip())
         
         # Soft match if no exact match found
         if not player_info:
-            soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(WAR_SHEET_ID, rank_type)], scorer=fuzz.token_sort_ratio)
+            soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_sheet_data(client_gs, WAR_SHEET_ID, rank_type)], scorer=fuzz.token_sort_ratio)
             best_match = soft_matches[0] if soft_matches else None
             if best_match and best_match[1] > 70:
-                player_info = get_player_rank_info(WAR_SHEET_ID, rank_type, best_match[0])
+                player_info = fetch_player_info(client_gs, WAR_SHEET_ID, rank_type, best_match[0])
         
         if player_info:
             title = f"{type.replace('-', ' ').title()} Ranks: {name}"
@@ -511,7 +405,7 @@ async def list_ranks(ctx: CommandContext, type: str, category: str, limit: int =
             "defense": "team_defense_rank",
         }
     rank_type = rank_types.get(type)
-    players_info = get_all_players_info(WAR_SHEET_ID, rank_type)
+    players_info = fetch_data_with_cache(client_gs, WAR_SHEET_ID, rank_type)
     if players_info:
         if limit:
             players_info = players_info[:limit]
@@ -574,7 +468,7 @@ async def list_ranks_dragon(ctx: CommandContext, type: str, limit: int = None):
         "dragon-defense": "dragon_defense_rank",
     }
     rank_type = rank_types.get(type)
-    players_info = get_all_players_info(WAR_SHEET_ID, rank_type)
+    players_info = fetch_data_with_cache(client_gs, WAR_SHEET_ID, rank_type)
     if players_info:
         if limit:
             players_info = players_info[:limit]
@@ -614,7 +508,7 @@ async def list_ranks_dragon(ctx: CommandContext, type: str, limit: int = None):
 )
 async def list_name_changes(ctx: CommandContext):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    name_changes_list = get_recent_name_changes()
+    name_changes_list = fetch_data_with_cache(client_gs, WAR_SHEET_ID, "recent_name_changes")
     if name_changes_list:
         header = "{:<20} {:<20}\n".format("Old Name", "New Name")
         separator = "=" * 36 + "\n"
@@ -693,7 +587,7 @@ async def roster_ranks(ctx: CommandContext, team: str, category: str, defense_ty
         return
 
     tab_name = f"{team}_{category}"
-    team_stats_list = get_sheet_records(WAR_SHEET_ID, tab_name)
+    team_stats_list = fetch_sheet_data(client_gs, WAR_SHEET_ID, tab_name)
     formatted_info = ""
     if team_stats_list:
         if category == "troops_defense" and defense_type:
@@ -793,7 +687,7 @@ async def stats_history(ctx: CommandContext, player_name: str, category: str, li
         spreadsheet_id = DRAGON_SHEET_ID
         tab_name = "dragon_history"
 
-    player_stats_list = fetch_sheet_data(spreadsheet_id, tab_name)
+    player_stats_list = fetch_sheet_data(client_gs, spreadsheet_id, tab_name)
     
     # Exact match
     player_entries = [entry for entry in player_stats_list if entry['Player'].lower() == player_name.lower()]
@@ -867,7 +761,7 @@ async def stats_history(ctx: CommandContext, player_name: str, category: str, li
 )
 async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_name: str = None):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    keeps_list = fetch_sheet_data(ROSTER_SHEET_ID, "bot_keep_logistics")
+    keeps_list = fetch_sheet_data(client_gs, ROSTER_SHEET_ID, "bot_keep_logistics")
 
     if keep_name and discord_name:
         await ctx.send("Please provide either a Keep name or a Discord name, not both.")
@@ -934,7 +828,7 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
 )
 async def rca_info(ctx: CommandContext, name: str):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    rca_list = fetch_sheet_data(RCA_SHEET_ID, "bot_rca_info")
+    rca_list = fetch_sheet_data(client_gs, RCA_SHEET_ID, "bot_rca_info")
     
     # Exact match
     entries = [record for record in rca_list if str(record['Name']).lower() == name.lower()]
@@ -970,7 +864,7 @@ async def rca_info(ctx: CommandContext, name: str):
 )
 async def rca_logs(ctx: CommandContext):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    rca_logs_list = fetch_sheet_data(RCA_SHEET_ID, "bot_rca_info")
+    rca_logs_list = fetch_sheet_data(client_gs, RCA_SHEET_ID, "bot_rca_info")
     if rca_logs_list:
         messages = []
         chunk_counter = 1
