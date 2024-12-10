@@ -28,6 +28,8 @@ from commands.list_ranks_dragon import list_ranks_dragon
 from commands.list_ranks_roster import list_ranks_roster
 from commands.list_name_changes import list_name_changes
 from commands.keep_logistics import keep_logistics
+from commands.rca_info import rca_info
+from commands.rca_logs import rca_logs
 
 load_dotenv()
 
@@ -45,11 +47,6 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.messages = True
 client = Client(token=TOKEN)
-
-# Event listener for when the bot is ready
-@client.event
-async def on_ready():
-    print(f'We have logged in as {client.me}')
 
 # TEAM-OVERVIEW command
 @client.command(
@@ -313,80 +310,17 @@ async def on_ready():
             "required": True,
         },
     ],
-)
-async def rca_info(ctx: CommandContext, name: str):
-    await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    rca_list = fetch_sheets_data(client_gs, RCA_SHEET_ID, "bot_rca_info")
-    
-    # Exact match
-    entries = [record for record in rca_list if str(record['Name']).lower() == name.lower()]
-
-    # Soft match if no exact match found
-    if not entries:
-        soft_matches = process.extract(name, [record['Name'] for record in rca_list], scorer=fuzz.token_sort_ratio)
-        best_match = soft_matches[0] if soft_matches else None
-        if best_match and best_match[1] > 70:  # Threshold for a good match
-            entries = [record for record in rca_list if record['Name'] == best_match[0]]
-
-    if entries:
-        for i, entry in enumerate(entries, start=1):
-            title = f"RCA Info {i}: {entry['Name']}"
-            subtitle = f"Type: {entry['Type']}\nRein Cap: {entry['Rein Cap']}\nPower Level: {entry['Power Level']}"
-            details = (
-                f"**Email**: \n{entry['Email']}\n\n"
-                f"**Password**: \n{entry['Password']}\n\n"
-                f"**Facebook Name**: \n{entry['Facebook Name']}\n\n"
-                f"**Access**: \n{entry['Access']}\n\n"
-                f"**Force Logs**: \n{entry['Force Logs']}\n"
-                f"**Notes**: \n{entry['Notes']}\n"
-            )
-            message = f"## {title}\n{subtitle}\n{'--' * 10}\n{details}"
-            await ctx.send(message)
-    else:
-        await ctx.send(f"## Oops, this is embarrassing..\n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
+)(rca_info)
 
 # RCA-LOGS command
 @client.command(
     name="rca-logs",
     description="Fetch the RCA logs.",
-)
-async def rca_logs(ctx: CommandContext):
-    await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    rca_logs_list = fetch_sheets_data(client_gs, RCA_SHEET_ID, "bot_rca_info")
-    if rca_logs_list:
-        messages = []
-        chunk_counter = 1
-        formatted_info = f"# RCA Logs {chunk_counter}\n" + "```\n"
-        for entry in rca_logs_list:
-            name = entry['Name']
-            rein_cap = entry['Rein Cap']
-            type_ = entry['Type']
-            power_level = entry['Power Level']
-            facebook_name = entry['Facebook Name']
-            email = entry['Email']
-            password = entry['Password']
-            entry_info = (
-                f"{name:<20}\n"
-                f"{rein_cap} | {type_} | {power_level}\n"
-                f"{'-' * 5}\n"
-                f"FB: {facebook_name:<20}\n"
-                f"{email} | {password}\n"
-                + "-" * 30 + "\n"
-            )
-            if len(formatted_info) + len(entry_info) + 3 > 2000:  # 2000 is the Discord message limit
-                formatted_info += "```"
-                messages.append(formatted_info)
-                chunk_counter += 1
-                formatted_info = f"# RCA Logs {chunk_counter}\n" + "```\n" + entry_info
-            else:
-                formatted_info += entry_info
-        formatted_info += "```"
-        messages.append(formatted_info)
-        
-        for message in messages:
-            await ctx.send(message)
-    else:
-        await ctx.send("No RCA logs found.")
+)(rca_logs)
 
+# Event listener for when the bot is ready
+@client.event
+async def on_ready():
+    print(f'We have logged in as {client.me}')
 
 client.start()
