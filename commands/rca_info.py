@@ -1,7 +1,7 @@
 # commands/rca_info.py
 
 from interactions import CommandContext
-from fuzzywuzzy import process, fuzz
+from rapidfuzz import process, fuzz
 from config.google_sheets import client_gs
 from config.constants import RCA_SHEET_ID
 from utils.fetch_sheets_data import fetch_sheets_data
@@ -15,7 +15,9 @@ async def rca_info(ctx: CommandContext, name: str):
 
     # Soft match if no exact match found
     if not entries:
-        soft_matches = process.extract(name, [record['Name'] for record in rca_list], scorer=fuzz.token_sort_ratio)
+        # Ensure all elements in the list are strings
+        names = [record['Name'] for record in rca_list if isinstance(record['Name'], str)]
+        soft_matches = process.extract(name, names, scorer=fuzz.token_sort_ratio)
         best_match = soft_matches[0] if soft_matches else None
         if best_match and best_match[1] > 70:  # Threshold for a good match
             entries = [record for record in rca_list if record['Name'] == best_match[0]]

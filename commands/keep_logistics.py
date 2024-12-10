@@ -1,7 +1,7 @@
 # commands/keep_logistics.py
 
 from interactions import CommandContext
-from fuzzywuzzy import process, fuzz
+from rapidfuzz import process, fuzz
 from config.google_sheets import client_gs
 from config.constants import ROSTER_SHEET_ID
 from utils.fetch_sheets_data import fetch_sheets_data
@@ -17,12 +17,14 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
     entries = []
     name_type = ""
     if keep_name:
-        name_type = "keep name"
         # Exact match
         entries = [record for record in keeps_list if str(record['Main Keep Name']).lower() == keep_name.lower()]
+
         # Soft match if no exact match found
         if not entries:
-            soft_matches = process.extract(keep_name, [record['Main Keep Name'] for record in keeps_list], scorer=fuzz.token_sort_ratio)
+            # Ensure all elements in the list are strings
+            names = [record['Main Keep Name'] for record in keeps_list if isinstance(record['Main Keep Name'], str)]
+            soft_matches = process.extract(keep_name, names, scorer=fuzz.token_sort_ratio)
             best_match = soft_matches[0] if soft_matches else None
             if best_match and best_match[1] > 70:  # Threshold for a good match
                 entries = [record for record in keeps_list if record['Main Keep Name'] == best_match[0]]
@@ -30,9 +32,12 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
         name_type = "discord username"
         # Exact match
         entries = [record for record in keeps_list if str(record['Discord Name']).lower() == discord_name.lower()]
+
         # Soft match if no exact match found
         if not entries:
-            soft_matches = process.extract(discord_name, [record['Discord Name'] for record in keeps_list], scorer=fuzz.token_sort_ratio)
+            # Ensure all elements in the list are strings
+            names = [record['Discord Name'] for record in keeps_list if isinstance(record['Discord Name'], str)]
+            soft_matches = process.extract(discord_name, names, scorer=fuzz.token_sort_ratio)
             best_match = soft_matches[0] if soft_matches else None
             if best_match and best_match[1] > 70:  # Threshold for a good match
                 entries = [record for record in keeps_list if record['Discord Name'] == best_match[0]]
@@ -46,11 +51,11 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
             subtitle = f"Discord Name: {entry['Discord Name']}\nDate: {entry['Date']}"
             divider = "--" * 10  # Section divider
             details = (
-                f"**Main Keep Name**: \n{entry['Main Keep Name']}\n"
-                f"**Main Keep Access**: \n{entry['Main Keep Access']}\n"
-                f"**Secondary Keep Names**: \n{entry['Secondary Keep Names']}\n"
-                f"**Alt Keep Names**: \n{entry['Alt Keep Names']}\n"
-                f"**Additional Details**: \n{entry['Additional Details']}\n"
+                f"**Main Keep Name**: \n{entry['Main Keep Name']}\n\n"
+                f"**Main Keep Access**: \n{entry['Main Keep Access']}\n\n"
+                f"**Secondary Keep Names**: \n{entry['Secondary Keep Names']}\n\n"
+                f"**Alt Keep Names**: \n{entry['Alt Keep Names']}\n\n"
+                f"**Additional Details**: \n{entry['Additional Details']}\n\n"
             )
             message = f"# {title}\n{subtitle}\n{divider}\n{details}"
             await ctx.send(message)

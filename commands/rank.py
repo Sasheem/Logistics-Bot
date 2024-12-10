@@ -1,7 +1,7 @@
 # commands/stats_power.py
 
 from interactions import CommandContext
-from fuzzywuzzy import process, fuzz
+from rapidfuzz import process, fuzz
 import math
 from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID

@@ -1,7 +1,7 @@
 # commands/roster_position.py
 
-from interactions import Client, CommandContext
-from fuzzywuzzy import process, fuzz
+from interactions import CommandContext
+from rapidfuzz import process, fuzz
 from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_roster_info import fetch_roster_info
