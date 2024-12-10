@@ -1,4 +1,4 @@
-# commands/list_name_changes.py
+# commands/list_ranks_roster.py
 
 from interactions import CommandContext
 from config.google_sheets import client_gs
