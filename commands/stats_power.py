@@ -1,4 +1,4 @@
-# commands/team_overview.py
+# commands/stats_power.py
 
 from interactions import CommandContext
 from fuzzywuzzy import process, fuzz
