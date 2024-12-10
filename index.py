@@ -1,21 +1,7 @@
 import discord
-from interactions import Client, CommandContext
-import math
+from interactions import Client
 import os 
 from dotenv import load_dotenv
-from fuzzywuzzy import fuzz, process
-
-# Load the client
-from config.google_sheets import client_gs
-
-# Load the constants
-from config.constants import WAR_SHEET_ID, ATTACK_SHEET_ID, DEFENSE_SHEET_ID, DRAGON_SHEET_ID, ROSTER_SHEET_ID, RCA_SHEET_ID
-
-# Load the helpers
-from utils.fetch_sheets_data import fetch_sheets_data
-from utils.fetch_data_with_cache import fetch_data_with_cache
-from utils.fetch_roster_info import fetch_roster_info
-from utils.fetch_player_info import fetch_player_info
 
 # Load the commands
 from commands.team_overview import team_overview
