@@ -302,6 +302,20 @@ client = Client(token=TOKEN)
 @client.command(
     name="rca-logs",
     description="Fetch the RCA logs.",
+    options=[
+        {
+            "name": "filter_type",
+            "description": "Filter the RCA logs by type",
+            "type": 3,  # STRING type
+            "required": False,
+            "choices": [
+                {"name": "All", "value": "All"},
+                {"name": "RCA", "value": "RCA"},
+                {"name": "Holder", "value": "Holder"},
+                {"name": "RCA Banner", "value": "RCA Banner"},
+            ],
+        },
+    ],
 )(rca_logs)
 
 # Event listener for when the bot is ready
