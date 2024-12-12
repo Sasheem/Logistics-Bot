@@ -5,17 +5,22 @@ from utils.fetch_sheets_data import fetch_sheets_data
 from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 
-async def team_overview(ctx: CommandContext, category: str):
+async def team_overview(ctx: CommandContext, category: str, type: str):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
 
     tab_name = f"{category}_overview"
     team_data = fetch_sheets_data(client_gs, WAR_SHEET_ID, tab_name)
 
     if team_data:
-        title = f"{category.replace('_', ' ').title()} Overview"
+        title = f"{type} {category.replace('_', ' ').title()} Overview" if type != "All" else f"{category.replace('_', ' ').title()} Overview"
         formatted_info = [f"# {title}"]
         
         for entry in team_data:
+            if type != "All":
+                entry = {k.replace(f"{type} ", ""): v for k, v in entry.items() if k.startswith(type)}
+            else:
+                entry = {k.replace("All ", ""): v for k, v in entry.items() if k.startswith("All")}
+
             formatted_info.append(f"## Total:  {entry['Submissions']}")
             formatted_info.append(f"**-- Troop Types --**")
             formatted_info.append(f"Infantry:  {entry['Infantry Totals']}")
@@ -42,4 +47,4 @@ async def team_overview(ctx: CommandContext, category: str):
 
         await ctx.send("\n".join(formatted_info))
     else:
-        await ctx.send("No data found for the specified category.")
+        await ctx.send("No data found for the specified category and type.")

@@ -37,7 +37,7 @@ client = Client(token=TOKEN)
 # TEAM-OVERVIEW command
 @client.command(
     name="team-overview",
-    description="Fetch the team overview for a specific category.",
+    description="Fetch the team overview for a specific category and type.",
     options=[
         {
             "name": "category",
@@ -49,6 +49,18 @@ client = Client(token=TOKEN)
                 {"name": "Defense", "value": "defense"},
                 {"name": "Dragon Attack", "value": "dragon_attack"},
                 {"name": "Dragon Defense", "value": "dragon_defense"},
+            ],
+        },
+        {
+            "name": "type",
+            "description": "Select the type",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "All", "value": "All"},
+                {"name": "WHSKY", "value": "WHSKY"},
+                {"name": "TANGO", "value": "TANGO"},
+                {"name": "FXTRT", "value": "FXTRT"},
             ],
         },
     ],
