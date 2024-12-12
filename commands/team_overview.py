@@ -1,7 +1,7 @@
 # commands/team_overview.py
 
 from interactions import CommandContext
-from utils.fetch_sheets_data import fetch_sheets_data
+from utils.fetch_data_with_cache import fetch_data_with_cache
 from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 
@@ -9,7 +9,7 @@ async def team_overview(ctx: CommandContext, category: str, type: str):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
 
     tab_name = f"{category}_overview"
-    team_data = fetch_sheets_data(client_gs, WAR_SHEET_ID, tab_name)
+    team_data =fetch_data_with_cache(client_gs, WAR_SHEET_ID, tab_name)
 
     if team_data:
         title = f"{type} {category.replace('_', ' ').title()} Overview" if type != "All" else f"{category.replace('_', ' ').title()} Overview"
