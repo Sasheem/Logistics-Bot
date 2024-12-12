@@ -16,6 +16,7 @@ from commands.list_name_changes import list_name_changes
 from commands.keep_logistics import keep_logistics
 from commands.rca_info import rca_info
 from commands.list_rca_logs import list_rca_logs
+from commands.roster_t4s import roster_t4s
 
 load_dotenv()
 
@@ -335,6 +336,19 @@ client = Client(token=TOKEN)
         },
     ],
 )(list_rca_logs)
+
+@client.command(
+    name="roster-t4s",
+    description="Fetch the T4s for a specific T3 player.",
+    options=[
+        {
+            "name": "name",
+            "description": "The T3 player name to search for",
+            "type": 3,  # STRING type
+            "required": True,
+        },
+    ],
+)(roster_t4s)
 
 # Event listener for when the bot is ready
 @client.event
