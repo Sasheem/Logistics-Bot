@@ -22,12 +22,14 @@ async def roster_t4s(ctx: CommandContext, name: str):
         if best_match and best_match[1] > 70:
             t3_index = next((i for i, entry in enumerate(data) if entry[f'Name {sheet_name}'] == best_match[0]), None)
             if t3_index is not None:
-                t3_found = True
-                t4s = [data[i][f'Name {sheet_name}'] for i in range(t3_index + 1, t3_index + 6)]
+                # Check if the found player is a T3
+                if data[t3_index][f'Position {sheet_name}'] == 'T3':
+                    t3_found = True
+                    t4s = [data[i][f'Name {sheet_name}'] for i in range(t3_index + 1, t3_index + 6)]
                 break
 
     if t3_found:
         response = f"**T4s for {t3_name}:**\n" + "\n".join(t4s)
         await ctx.send(response)
     else:
-        await ctx.send(f"## Oops, this is embarrassing..\n\nT3 player not found: **{t3_name}**.\nPlease check the spelling and try again.")
+        await ctx.send(f"## Oops, this is embarrassing..\n\nPlayer not found or is not a T3: **{t3_name}**.\nPlease check the spelling and try again.")
