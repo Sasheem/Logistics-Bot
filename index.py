@@ -17,6 +17,7 @@ from commands.keep_logistics import keep_logistics
 from commands.rca_info import rca_info
 from commands.list_rca_logs import list_rca_logs
 from commands.roster_t4s import roster_t4s
+from commands.name_change import name_change
 
 load_dotenv()
 
@@ -337,6 +338,7 @@ client = Client(token=TOKEN)
     ],
 )(list_rca_logs)
 
+# ROSTER-T4S command
 @client.command(
     name="roster-t4s",
     description="Fetch the T4s for a specific T3 player.",
@@ -349,6 +351,44 @@ client = Client(token=TOKEN)
         },
     ],
 )(roster_t4s)
+
+# NAME CHANGE command
+@client.command(
+    name="name-change",
+    description="Change a player's name in the specified sheet and tab.",
+    options=[
+        {
+            "name": "old_name",
+            "description": "The old name to be changed",
+            "type": 3,  # STRING type
+            "required": True,
+        },
+        {
+            "name": "new_name",
+            "description": "The new name to replace the old name",
+            "type": 3,  # STRING type
+            "required": True,
+        },
+        {
+            "name": "option",
+            "description": "Select the sheet and tab to update",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "TEST", "value": "TEST"},
+                {"name": "Active Keeps", "value": "Active Keeps"},
+                {"name": "Keep Logistics", "value": "Keep Logistics"},
+                {"name": "Attack 89", "value": "Attack 89"},
+                {"name": "Defense 89", "value": "Defense 89"},
+                {"name": "Dragon 89", "value": "Dragon 89"},
+                {"name": "Attack 33", "value": "Attack 33"},
+                {"name": "Defense 33", "value": "Defense 33"},
+                {"name": "Dragon 33", "value": "Dragon 33"},
+                {"name": "RCA", "value": "RCA"},
+            ],
+        },
+    ],
+)(name_change)
 
 # Event listener for when the bot is ready
 @client.event
