@@ -1,14 +1,7 @@
 
 # utils/fetch_data-with_cache.py
 import time
-
-# Global cache
-cache = {
-    "data": {},
-    "timestamp": 0
-}
-
-CACHE_DURATION = 300  # Cache duration in seconds (e.g., 5 minutes)
+from globals.cache_config import cache, CACHE_DURATION
 
 def fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name):
     current_time = time.time()
