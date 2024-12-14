@@ -4,6 +4,7 @@ from interactions import CommandContext
 from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_sheets_data import fetch_sheets_data
+from utils.fetch_data_with_cache import fetch_data_with_cache
 
 async def list_ranks_roster(ctx: CommandContext, team: str, category: str, defense_type: str = None):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
@@ -17,7 +18,7 @@ async def list_ranks_roster(ctx: CommandContext, team: str, category: str, defen
         return
 
     tab_name = f"{team}_{category}"
-    team_stats_list = fetch_sheets_data(client_gs, WAR_SHEET_ID, tab_name)
+    team_stats_list = fetch_data_with_cache(client_gs, WAR_SHEET_ID, tab_name)
     formatted_info = ""
     if team_stats_list:
         if category == "troops_defense" and defense_type:

@@ -7,6 +7,7 @@ from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_player_info import fetch_player_info
 from utils.fetch_sheets_data import fetch_sheets_data
+from utils.fetch_data_with_cache import fetch_data_with_cache
 
 async def rank(ctx: CommandContext, type: str, name: str):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
@@ -23,8 +24,8 @@ async def rank(ctx: CommandContext, type: str, name: str):
         
         # Soft match if no exact match found
         if not attack_info and not defense_info:
-            soft_matches_attack = process.extract(name, [entry['Player Name'] for entry in fetch_sheets_data(client_gs, WAR_SHEET_ID, "dragon_attack_rank")], scorer=fuzz.token_sort_ratio)
-            soft_matches_defense = process.extract(name, [entry['Player Name'] for entry in fetch_sheets_data(client_gs, WAR_SHEET_ID, "dragon_defense_rank")], scorer=fuzz.token_sort_ratio)
+            soft_matches_attack = process.extract(name, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, "dragon_attack_rank")], scorer=fuzz.token_sort_ratio)
+            soft_matches_defense = process.extract(name, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, "dragon_defense_rank")], scorer=fuzz.token_sort_ratio)
             best_match_attack = soft_matches_attack[0] if soft_matches_attack else None
             best_match_defense = soft_matches_defense[0] if soft_matches_defense else None
             if best_match_attack and best_match_attack[1] > 70:
@@ -68,7 +69,7 @@ async def rank(ctx: CommandContext, type: str, name: str):
         
         # Soft match if no exact match found
         if not player_info:
-            soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_sheets_data(client_gs, WAR_SHEET_ID, rank_type)], scorer=fuzz.token_sort_ratio)
+            soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, rank_type)], scorer=fuzz.token_sort_ratio)
             best_match = soft_matches[0] if soft_matches else None
             if best_match and best_match[1] > 70:
                 player_info = fetch_player_info(client_gs, WAR_SHEET_ID, rank_type, best_match[0])

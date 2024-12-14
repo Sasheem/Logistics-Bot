@@ -5,10 +5,11 @@ from rapidfuzz import process, fuzz
 from config.google_sheets import client_gs
 from config.constants import RCA_SHEET_ID
 from utils.fetch_sheets_data import fetch_sheets_data
+from utils.fetch_data_with_cache import fetch_data_with_cache
 
 async def rca_info(ctx: CommandContext, name: str):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    rca_list = fetch_sheets_data(client_gs, RCA_SHEET_ID, "bot_rca_info")
+    rca_list = fetch_data_with_cache(client_gs, RCA_SHEET_ID, "bot_rca_info")
     
     # Exact match
     entries = [record for record in rca_list if str(record['Name']).lower() == name.lower()]

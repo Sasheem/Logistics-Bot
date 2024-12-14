@@ -7,6 +7,7 @@ from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_player_info import fetch_player_info
 from utils.fetch_sheets_data import fetch_sheets_data
+from utils.fetch_data_with_cache import fetch_data_with_cache
 
 async def stats_power(ctx: CommandContext, type: str, name: str):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
@@ -21,7 +22,7 @@ async def stats_power(ctx: CommandContext, type: str, name: str):
 
     # Soft match if no exact match found
     if not player_info:
-        soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_sheets_data(client_gs, WAR_SHEET_ID, stats_type)], scorer=fuzz.token_sort_ratio)
+        soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type)], scorer=fuzz.token_sort_ratio)
         best_match = soft_matches[0] if soft_matches else None
         if best_match and best_match[1] > 70:
             player_info = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, best_match[0])

@@ -6,6 +6,7 @@ import math
 from config.google_sheets import client_gs
 from config.constants import ATTACK_SHEET_ID, DEFENSE_SHEET_ID, DRAGON_SHEET_ID
 from utils.fetch_sheets_data import fetch_sheets_data
+from utils.fetch_data_with_cache import fetch_data_with_cache
 
 async def stats_history(ctx: CommandContext, player_name: str, category: str, limit: int = None):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
@@ -23,7 +24,7 @@ async def stats_history(ctx: CommandContext, player_name: str, category: str, li
         spreadsheet_id = DRAGON_SHEET_ID
         tab_name = "dragon_history"
 
-    player_stats_list = fetch_sheets_data(client_gs, spreadsheet_id, tab_name)
+    player_stats_list = fetch_data_with_cache(client_gs, spreadsheet_id, tab_name)
     
     # Exact match
     player_entries = [entry for entry in player_stats_list if entry['Player'].lower() == player_name.lower()]
