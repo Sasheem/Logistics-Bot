@@ -3,9 +3,7 @@
 from interactions import CommandContext
 from config.google_sheets import client_gs
 from config.constants import ATTACK_SHEET_ID, DEFENSE_SHEET_ID, DRAGON_SHEET_ID, ROSTER_SHEET_ID, RCA_SHEET_ID, TEST_SHEET_ID, ATTACK_SHEET_ID_33, DEFENSE_SHEET_ID_33, DRAGON_SHEET_ID_33
-# from utils.fetch_data_with_cache import fetch_data_with_cache
 import gspread.utils  # Import the gspread.utils module
-# from utils.update_sheet_data import update_sheet_data
 
 # Define the sheet and tab names for each option
 SHEET_TABS = {
@@ -23,7 +21,7 @@ SHEET_TABS = {
 
 async def name_change(ctx: CommandContext, old_name: str, new_name: str, option: str):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-
+    
     # Get the sheet and tab details for the selected option
     sheet_details = SHEET_TABS.get(option)
     if not sheet_details:
