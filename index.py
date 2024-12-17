@@ -18,6 +18,9 @@ from commands.rca_info import rca_info
 from commands.list_rca_logs import list_rca_logs
 from commands.roster_t4s import roster_t4s
 from commands.name_change import name_change
+from commands.stats_compare import stats_compare
+from commands.stats_review import stats_review
+from commands.stats_analysis import stats_analysis
 
 load_dotenv()
 
@@ -138,6 +141,76 @@ client = Client(token=TOKEN)
         },
     ],
 )(stats_history)
+
+# Register the COMPARE STATS command
+@client.command(
+    name="stats-compare",
+    description="Compare the stats of two players.",
+    options=[
+        {
+            "name": "type",
+            "description": "Enter the type of stats (attack, defense, dragon-attack, dragon-defense)",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "attack", "value": "attack"},
+                {"name": "defense", "value": "defense"},
+                {"name": "dragon-attack", "value": "dragon-attack"},
+                {"name": "dragon-defense", "value": "dragon-defense"},
+            ],
+        },
+        {
+            "name": "name1",
+            "description": "Enter the first player's name",
+            "type": 3,  # STRING type
+            "required": True,
+        },
+        {
+            "name": "name2",
+            "description": "Enter the second player's name",
+            "type": 3,  # STRING type
+            "required": True,
+        },
+    ],
+)(stats_compare)
+
+# Register the COMPARE REVIEW command
+@client.command(
+    name="stats-review",
+    description="Fetch list of submissions needing review. Unavaiable at the moment.",
+    options=[
+        {
+            "name": "type",
+            "description": "Enter the type of stats (attack, defense, dragon)",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "attack", "value": "attack"},
+                {"name": "defense", "value": "defense"},
+                {"name": "dragon", "value": "dragon"},
+            ],
+        },
+    ],
+)(stats_review)
+
+# Register the COMPARE ANALYSIS command
+@client.command(
+    name="stats-analysis",
+    description="Calculate analysis vs team (or tier) for given player. Unavaiable at the moment.",
+    options=[
+        {
+            "name": "type",
+            "description": "Enter the type of stats (attack, defense, dragon)",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "attack", "value": "attack"},
+                {"name": "defense", "value": "defense"},
+                {"name": "dragon", "value": "dragon"},
+            ],
+        },
+    ],
+)(stats_analysis)
 
 # RANK command
 @client.command(
