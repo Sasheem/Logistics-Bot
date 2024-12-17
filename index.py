@@ -19,8 +19,8 @@ from commands.list_rca_logs import list_rca_logs
 from commands.roster_t4s import roster_t4s
 from commands.name_change import name_change
 from commands.stats_compare import stats_compare
-from commands.stats_review import stats_review
-from commands.stats_analysis import stats_analysis
+# from commands.stats_review import stats_review
+# from commands.stats_analysis import stats_analysis
 
 load_dotenv()
 
@@ -175,42 +175,42 @@ client = Client(token=TOKEN)
 )(stats_compare)
 
 # Register the STATS REVIEW command
-@client.command(
-    name="stats-review",
-    description="Fetch list of submissions needing review. Unavaiable at the moment.",
-    options=[
-        {
-            "name": "type",
-            "description": "Enter the type of stats (attack, defense, dragon)",
-            "type": 3,  # STRING type
-            "required": True,
-            "choices": [
-                {"name": "attack", "value": "attack"},
-                {"name": "defense", "value": "defense"},
-                {"name": "dragon", "value": "dragon"},
-            ],
-        },
-    ],
-)(stats_review)
+# @client.command(
+#     name="stats-review",
+#     description="Fetch list of submissions needing review. Unavaiable at the moment.",
+#     options=[
+#         {
+#             "name": "type",
+#             "description": "Enter the type of stats (attack, defense, dragon)",
+#             "type": 3,  # STRING type
+#             "required": True,
+#             "choices": [
+#                 {"name": "attack", "value": "attack"},
+#                 {"name": "defense", "value": "defense"},
+#                 {"name": "dragon", "value": "dragon"},
+#             ],
+#         },
+#     ],
+# )(stats_review)
 
 # Register the STATS ANALYSIS command
-@client.command(
-    name="stats-analysis",
-    description="Calculate analysis vs team (or tier) for given player. Unavaiable at the moment.",
-    options=[
-        {
-            "name": "type",
-            "description": "Enter the type of stats (attack, defense, dragon)",
-            "type": 3,  # STRING type
-            "required": True,
-            "choices": [
-                {"name": "attack", "value": "attack"},
-                {"name": "defense", "value": "defense"},
-                {"name": "dragon", "value": "dragon"},
-            ],
-        },
-    ],
-)(stats_analysis)
+# @client.command(
+#     name="stats-analysis",
+#     description="Calculate analysis vs team (or tier) for given player. Unavaiable at the moment.",
+#     options=[
+#         {
+#             "name": "type",
+#             "description": "Enter the type of stats (attack, defense, dragon)",
+#             "type": 3,  # STRING type
+#             "required": True,
+#             "choices": [
+#                 {"name": "attack", "value": "attack"},
+#                 {"name": "defense", "value": "defense"},
+#                 {"name": "dragon", "value": "dragon"},
+#             ],
+#         },
+#     ],
+# )(stats_analysis)
 
 # RANK command
 @client.command(
