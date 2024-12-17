@@ -6,7 +6,6 @@ import math
 from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_player_info import fetch_player_info
-from utils.fetch_sheets_data import fetch_sheets_data
 from utils.fetch_data_with_cache import fetch_data_with_cache
 
 async def stats_power(ctx: CommandContext, type: str, name: str):
