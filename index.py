@@ -142,7 +142,7 @@ client = Client(token=TOKEN)
     ],
 )(stats_history)
 
-# Register the COMPARE STATS command
+# Register the STATS COMPARE command
 @client.command(
     name="stats-compare",
     description="Compare the stats of two players.",
@@ -174,7 +174,7 @@ client = Client(token=TOKEN)
     ],
 )(stats_compare)
 
-# Register the COMPARE REVIEW command
+# Register the STATS REVIEW command
 @client.command(
     name="stats-review",
     description="Fetch list of submissions needing review. Unavaiable at the moment.",
@@ -193,7 +193,7 @@ client = Client(token=TOKEN)
     ],
 )(stats_review)
 
-# Register the COMPARE ANALYSIS command
+# Register the STATS ANALYSIS command
 @client.command(
     name="stats-analysis",
     description="Calculate analysis vs team (or tier) for given player. Unavaiable at the moment.",
