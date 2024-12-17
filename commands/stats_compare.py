@@ -11,7 +11,7 @@ from utils.fetch_data_with_cache import fetch_data_with_cache
 # use this
 async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    # await ctx.send(f"## Command Unavailable \nPlease try again later.")
+    
     stats_types = {
         "attack": "player_stats",
         "defense": "player_defense_stats",
