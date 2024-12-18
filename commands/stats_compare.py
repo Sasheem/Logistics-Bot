@@ -47,7 +47,9 @@ async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str):
         title = f"{type.replace('-', ' ').title()} Stats Comparison"
         date1 = player_info1.get('Date', 'N/A')
         date2 = player_info2.get('Date', 'N/A')
-        formatted_info = [f"# {title} \nPlayers: **{name1}** vs **{name2}**"]
+        display_name1 = player_info1.get('Player Name', name1)
+        display_name2 = player_info2.get('Player Name', name2)
+        formatted_info = [f"# {title} \nPlayers: **{display_name1}** vs **{display_name2}**"]
         if type not in ["dragon-attack", "dragon-defense"]:
             formatted_info.append(f"Date: {date1} vs {date2}")
 
@@ -105,9 +107,9 @@ async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str):
             avg_overall2 = player_info2.get("Scoring Overall", 0)
 
             # Determine winners
-            base_winner = name1 if avg_base1 > avg_base2 else name2
-            glam_winner = name1 if avg_glam1 > avg_glam2 else name2
-            overall_winner = name1 if avg_overall1 > avg_overall2 else name2
+            base_winner = display_name1 if avg_base1 > avg_base2 else display_name2
+            glam_winner = display_name1 if avg_glam1 > avg_glam2 else display_name2
+            overall_winner = display_name1 if avg_overall1 > avg_overall2 else display_name2
 
             formatted_info.append("## Final Results")
             
@@ -121,11 +123,11 @@ async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str):
             if attack1 > attack2:
                 percentage_diff = round(((attack1 - attack2) / attack2) * 100) if attack2 != 0 else float('inf')
                 formatted_info.append(f"Attack Score: **{round(attack1):,}** vs {round(attack2):,} | {percentage_diff}%")
-                overall_winner = name1
+                overall_winner = display_name1
             else:
                 percentage_diff = round(((attack2 - attack1) / attack1) * 100) if attack1 != 0 else float('inf')
                 formatted_info.append(f"Attack Score: {round(attack1):,} vs **{round(attack2):,}** | {percentage_diff}%")
-                overall_winner = name2
+                overall_winner = display_name2
 
             formatted_info.append("## Final Results")
             formatted_info.append(f"\nOverall Winner: **{overall_winner}**")
@@ -140,11 +142,11 @@ async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str):
             if total1 > total2:
                 percentage_diff = round(((total1 - total2) / total2) * 100) if total2 != 0 else float('inf')
                 formatted_info.append(f"Defense Score: **{round(total1):,}** vs {round(total2):,} | {percentage_diff}%")
-                overall_winner = name1
+                overall_winner = display_name1
             else:
                 percentage_diff = round(((total2 - total1) / total1) * 100) if total1 != 0 else float('inf')
                 formatted_info.append(f"Defense Score: {round(total1):,} vs **{round(total2):,}** | {percentage_diff}%")
-                overall_winner = name2
+                overall_winner = display_name2
 
             formatted_info.append("## Final Results")
             formatted_info.append(f"\nOverall Winner: **{overall_winner}**")
