@@ -32,6 +32,9 @@ async def stats_power(ctx: CommandContext, type: str, name: str):
         formatted_info = [f"# {title}\nDate: {date}"]
         base_section = False
         glam_section = False
+        scoring_section = False
+        ranking_section = False
+
         for key, value in player_info.items():
             if key in ['Date', 'Additional Details', 'Editor Notes']:
                 continue
@@ -41,7 +44,13 @@ async def stats_power(ctx: CommandContext, type: str, name: str):
             if "(Glam)" in key and not glam_section:
                 formatted_info.append("## Glam")
                 glam_section = True
-            formatted_key = key.replace("(Base)", "").replace("(Glam)", "").strip()
+            if "Scoring" in key and not scoring_section:
+                formatted_info.append("## Scoring")
+                scoring_section = True
+            if "Ranking" in key and not ranking_section:
+                formatted_info.append("## Ranking")
+                ranking_section = True
+            formatted_key = key.replace("(Base)", "").replace("(Glam)", "").replace("Scoring", "").replace("Ranking", "").strip()
             if formatted_key.startswith("Total"):
                 formatted_value = f"**{round(value):,}**" if isinstance(value, (int, float)) and math.isfinite(value) else f"**{value}**"
             else:

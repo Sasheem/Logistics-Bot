@@ -54,7 +54,8 @@ async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str):
         if type in ["attack", "defense"]:
             base_section = False
             glam_section = False
-            average_section = False
+            scoring_section = False
+            ranking_section = False
 
             for key in player_info1.keys():
                 if key in ['Date', 'Additional Details', 'Editor Notes', 'Player Name']:
@@ -65,41 +66,50 @@ async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str):
                 if "(Glam)" in key and not glam_section:
                     formatted_info.append("## Glam")
                     glam_section = True
-                if "Average" in key and not average_section:
-                    formatted_info.append("## Average")
-                    average_section = True
-                formatted_key = key.replace("(Base)", "").replace("(Glam)", "").replace("Average", "").strip()
+                if "Scoring" in key and not scoring_section:
+                    formatted_info.append("## Scoring")
+                    scoring_section = True
+                if "Ranking" in key and not ranking_section:
+                    formatted_info.append("## Ranking")
+                    ranking_section = True
+                formatted_key = key.replace("(Base)", "").replace("(Glam)", "").replace("Scoring", "").replace("Ranking", "").strip()
                 value1 = player_info1.get(key, 0)
                 value2 = player_info2.get(key, 0)
                 if value1 == 0 or value2 == 0:
                     continue
                 if isinstance(value1, (int, float)) and math.isfinite(value1) and isinstance(value2, (int, float)) and math.isfinite(value2):
-                    if value1 > value2:
-                        # percentage_diff = round(((value1 - value2) / value2) * 100) if value2 != 0 else float('inf')
-                        percentage_diff = round(((value1 - value2) / value2) * 100) if value2 != 0 else "N/A"
-                        formatted_value1 = f"**{round(value1):,}**"
-                        formatted_value2 = f"{round(value2):,} | {percentage_diff}%"
+                    if "Rank" in key:
+                        if value1 < value2:
+                            formatted_value1 = f"**{round(value1):,}**"
+                            formatted_value2 = f"{round(value2):,}"
+                        else:
+                            formatted_value1 = f"{round(value1):,}"
+                            formatted_value2 = f"**{round(value2):,}**"
                     else:
-                        # percentage_diff = round(((value2 - value1) / value1) * 100) if value1 != 0 else float('inf')
-                        percentage_diff = round(((value2 - value1) / value1) * 100) if value1 != 0 else "N/A"
-                        formatted_value1 = f"{round(value1):,}"
-                        formatted_value2 = f"**{round(value2):,}** | {percentage_diff}%"
+                        if value1 > value2:
+                            percentage_diff = round(((value1 - value2) / value2) * 100) if value2 != 0 else "N/A"
+                            formatted_value1 = f"**{round(value1):,}**"
+                            formatted_value2 = f"{round(value2):,} | {percentage_diff}%"
+                        else:
+                            percentage_diff = round(((value2 - value1) / value1) * 100) if value1 != 0 else "N/A"
+                            formatted_value1 = f"{round(value1):,}"
+                            formatted_value2 = f"**{round(value2):,}** | {percentage_diff}%"
                     formatted_info.append(f"{formatted_key}: {formatted_value1} vs {formatted_value2}")
 
             # Fetch average scores from the sheet
-            avg_base1 = player_info1.get("Average Base Score", 0)
-            avg_base2 = player_info2.get("Average Base Score", 0)
-            avg_glam1 = player_info1.get("Average Glam Score", 0)
-            avg_glam2 = player_info2.get("Average Glam Score", 0)
-            avg_overall1 = player_info1.get("Average Overall Score", 0)
-            avg_overall2 = player_info2.get("Average Overall Score", 0)
+            avg_base1 = player_info1.get("Scoring Base", 0)
+            avg_base2 = player_info2.get("Scoring Base", 0)
+            avg_glam1 = player_info1.get("Scoring Glam", 0)
+            avg_glam2 = player_info2.get("Scoring Glam", 0)
+            avg_overall1 = player_info1.get("Scoring Overall", 0)
+            avg_overall2 = player_info2.get("Scoring Overall", 0)
 
             # Determine winners
             base_winner = name1 if avg_base1 > avg_base2 else name2
             glam_winner = name1 if avg_glam1 > avg_glam2 else name2
             overall_winner = name1 if avg_overall1 > avg_overall2 else name2
 
-            formatted_info.append("## Results")
+            formatted_info.append("## Final Results")
             
             formatted_info.append(f"\nBase Winner: **{base_winner}**")
             formatted_info.append(f"Glam Winner: **{glam_winner}**")
@@ -110,14 +120,14 @@ async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str):
             attack2 = player_info2.get("Attack", 0)
             if attack1 > attack2:
                 percentage_diff = round(((attack1 - attack2) / attack2) * 100) if attack2 != 0 else float('inf')
-                formatted_info.append(f"Attack: **{round(attack1):,}** vs {round(attack2):,} | {percentage_diff}%")
+                formatted_info.append(f"Attack Score: **{round(attack1):,}** vs {round(attack2):,} | {percentage_diff}%")
                 overall_winner = name1
             else:
                 percentage_diff = round(((attack2 - attack1) / attack1) * 100) if attack1 != 0 else float('inf')
-                formatted_info.append(f"Attack: {round(attack1):,} vs **{round(attack2):,}** | {percentage_diff}%")
+                formatted_info.append(f"Attack Score: {round(attack1):,} vs **{round(attack2):,}** | {percentage_diff}%")
                 overall_winner = name2
 
-            formatted_info.append("## Results")
+            formatted_info.append("## Final Results")
             formatted_info.append(f"\nOverall Winner: **{overall_winner}**")
 
         elif type == "dragon-defense":
@@ -129,14 +139,14 @@ async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str):
             total2 = defense2 + health2
             if total1 > total2:
                 percentage_diff = round(((total1 - total2) / total2) * 100) if total2 != 0 else float('inf')
-                formatted_info.append(f"Defense + Health: **{round(total1):,}** vs {round(total2):,} | {percentage_diff}%")
+                formatted_info.append(f"Defense Score: **{round(total1):,}** vs {round(total2):,} | {percentage_diff}%")
                 overall_winner = name1
             else:
                 percentage_diff = round(((total2 - total1) / total1) * 100) if total1 != 0 else float('inf')
-                formatted_info.append(f"Defense + Health: {round(total1):,} vs **{round(total2):,}** | {percentage_diff}%")
+                formatted_info.append(f"Defense Score: {round(total1):,} vs **{round(total2):,}** | {percentage_diff}%")
                 overall_winner = name2
 
-            formatted_info.append("## Results")
+            formatted_info.append("## Final Results")
             formatted_info.append(f"\nOverall Winner: **{overall_winner}**")
 
         await ctx.send("\n".join(formatted_info))
