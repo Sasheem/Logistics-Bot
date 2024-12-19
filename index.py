@@ -63,6 +63,7 @@ client = Client(token=TOKEN)
             "required": True,
             "choices": [
                 {"name": "All", "value": "All"},
+                {"name": "All Rosters", "value": "All Rosters"},
                 {"name": "WHSKY", "value": "WHSKY"},
                 {"name": "TANGO", "value": "TANGO"},
                 {"name": "FXTRT", "value": "FXTRT"},
