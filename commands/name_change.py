@@ -60,4 +60,4 @@ async def name_change(ctx: CommandContext, old_name: str, new_name: str, option:
     # Update the sheet with the modified data
     update_column_data(sheet_id, tab_name, column_index, updated_data)
 
-    await ctx.send(f"## Success! \nChanged {change_count} instance(s) of \"{old_name}\" to **\"{new_name}\"** in {option}.")
+    await ctx.send(f"## Name change \nUpdated {change_count} instance(s) of \"{old_name}\" to **\"{new_name}\"** in {option}.")
