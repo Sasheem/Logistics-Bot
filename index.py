@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 # Load the commands
 from commands.team_overview import team_overview
 from commands.roster_position import roster_position
+from commands.roster_t4s import roster_t4s
+from commands.roster_alts import roster_alts
 from commands.stats_power import stats_power
 from commands.stats_history import stats_history
 from commands.rank import rank
@@ -16,7 +18,6 @@ from commands.list_name_changes import list_name_changes
 from commands.keep_logistics import keep_logistics
 from commands.rca_info import rca_info
 from commands.list_rca_logs import list_rca_logs
-from commands.roster_t4s import roster_t4s
 from commands.name_change import name_change
 from commands.stats_compare import stats_compare
 # from commands.stats_review import stats_review
@@ -85,6 +86,51 @@ client = Client(token=TOKEN)
         },
     ],
 )(roster_position)
+
+# ROSTER-T4S command
+@client.command(
+    name="roster-t4s",
+    description="Fetch the T4s for a specific T3 player.",
+    options=[
+        {
+            "name": "name",
+            "description": "The T3 player name to search for",
+            "type": 3,  # STRING type
+            "required": True,
+        },
+    ],
+)(roster_t4s)
+
+# Register the LIST-ROSTER-ALTS command
+@client.command(
+    name="roster-alts",
+    description="List roster alts for a specific team and type.",
+    options=[
+        {
+            "name": "team",
+            "description": "Select the team",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "WHSKY", "value": "WHSKY"},
+                {"name": "TANGO", "value": "TANGO"},
+                {"name": "FXTRT", "value": "FXTRT"},
+            ],
+        },
+        {
+            "name": "type",
+            "description": "Select the type",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "All", "value": "All"},
+                {"name": "RCA", "value": "RCA"},
+                {"name": "Alt", "value": "Alt"},
+                {"name": "X", "value": "X"},
+            ],
+        },
+    ],
+)(roster_alts)
 
 # STATS POWER command
 @client.command(
@@ -411,20 +457,6 @@ client = Client(token=TOKEN)
         },
     ],
 )(list_rca_logs)
-
-# ROSTER-T4S command
-@client.command(
-    name="roster-t4s",
-    description="Fetch the T4s for a specific T3 player.",
-    options=[
-        {
-            "name": "name",
-            "description": "The T3 player name to search for",
-            "type": 3,  # STRING type
-            "required": True,
-        },
-    ],
-)(roster_t4s)
 
 # NAME CHANGE command
 @client.command(
