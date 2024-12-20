@@ -119,7 +119,7 @@ client = Client(token=TOKEN)
     ],
 )(roster_t4s)
 
-# Register the ROSTER-ALTS command
+# ROSTER-ALTS command
 @client.command(
     name="roster-alts",
     description="List roster alts for a specific team and type.",
@@ -225,7 +225,7 @@ client = Client(token=TOKEN)
     ],
 )(stats_history)
 
-# Register the STATS COMPARE command
+# STATS COMPARE command
 @client.command(
     name="stats-compare",
     description="Compare the stats of two players.",
@@ -263,7 +263,7 @@ client = Client(token=TOKEN)
     ],
 )(stats_compare)
 
-# Register the STATS REVIEW command
+# STATS REVIEW command
 # @client.command(
 #     name="stats-review",
 #     description="Fetch list of submissions needing review. Unavaiable at the moment.",
@@ -282,7 +282,7 @@ client = Client(token=TOKEN)
 #     ],
 # )(stats_review)
 
-# Register the STATS ANALYSIS command
+# STATS ANALYSIS command
 # @client.command(
 #     name="stats-analysis",
 #     description="Calculate analysis vs team (or tier) for given player. Unavaiable at the moment.",
@@ -332,9 +332,9 @@ client = Client(token=TOKEN)
     ],
 )(rank)
 
-# LIST RANKS command
+# RANKS TROOPS command
 @client.command(
-    name="list-ranks",
+    name="ranks-troops",
     description="List all players' ranks and scores for different categories.",
     options=[
         {
@@ -379,9 +379,9 @@ client = Client(token=TOKEN)
     ],
 )(list_ranks)
 
-# LIST RANKS DRAGON command
+# RANKS DRAGONs command
 @client.command(
-    name="list-ranks-dragon",
+    name="ranks-dragons",
     description="List all players' dragon ranks and scores.",
     options=[
         {
@@ -409,9 +409,9 @@ client = Client(token=TOKEN)
     ],
 )(list_ranks_dragon)
 
-# ROSTER-RANKS command
+# RANKS ROSTER command
 @client.command(
-    name="list-ranks-roster",
+    name="ranks-roster",
     description="Fetch the ranks for a specific team and category.",
     options=[
         {
@@ -457,20 +457,6 @@ client = Client(token=TOKEN)
         },
     ],
 )(list_ranks_roster)
-
-# LIST-NAME-CHANGES command
-@client.command(
-    name="list-name-changes",
-    description="Fetch the list of recent name changes.",
-    options=[
-        {
-            "name": "clear_cache",
-            "description": "Clear cache and fetch fresh data",
-            "type": 5,  # BOOLEAN type
-            "required": False,
-        },
-    ],
-)(list_name_changes)
 
 # KEEP-LOGISTICS command
 @client.command(
@@ -587,6 +573,20 @@ client = Client(token=TOKEN)
         },
     ],
 )(name_change)
+
+# RECENT NAME-CHANGES command
+@client.command(
+    name="recent-name-changes",
+    description="Fetch the list of recent name changes.",
+    options=[
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
+    ],
+)(list_name_changes)
 
 # Event listener for when the bot is ready
 @client.event
