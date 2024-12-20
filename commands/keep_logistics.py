@@ -4,12 +4,11 @@ from interactions import CommandContext
 from rapidfuzz import process, fuzz
 from config.google_sheets import client_gs
 from config.constants import ROSTER_SHEET_ID
-from utils.fetch_sheets_data import fetch_sheets_data
 from utils.fetch_data_with_cache import fetch_data_with_cache
 
-async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_name: str = None):
+async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_name: str = None, clear_cache: bool = False):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    keeps_list = fetch_data_with_cache(client_gs, ROSTER_SHEET_ID, "bot_keep_logistics")
+    keeps_list = fetch_data_with_cache(client_gs, ROSTER_SHEET_ID, "bot_keep_logistics", use_cache=not clear_cache)
 
     if keep_name and discord_name:
         await ctx.send("Please provide either a Keep name or a Discord name, not both.")

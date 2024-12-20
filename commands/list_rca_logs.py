@@ -1,12 +1,11 @@
 from interactions import CommandContext
 from config.google_sheets import client_gs
 from config.constants import RCA_SHEET_ID
-from utils.fetch_sheets_data import fetch_sheets_data
 from utils.fetch_data_with_cache import fetch_data_with_cache
 
-async def list_rca_logs(ctx: CommandContext, filter_type: str = "All", min_cap: int = 0):
+async def list_rca_logs(ctx: CommandContext, filter_type: str = "All", min_cap: int = 0, clear_cache: bool = False):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    rca_logs_list = fetch_data_with_cache(client_gs, RCA_SHEET_ID, "bot_rca_info")
+    rca_logs_list = fetch_data_with_cache(client_gs, RCA_SHEET_ID, "bot_rca_info", use_cache=not clear_cache)
     if rca_logs_list:
         if filter_type != "All":
             rca_logs_list = [entry for entry in rca_logs_list if entry['Type'] == filter_type]

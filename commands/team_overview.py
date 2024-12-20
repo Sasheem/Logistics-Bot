@@ -5,11 +5,11 @@ from utils.fetch_data_with_cache import fetch_data_with_cache
 from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 
-async def team_overview(ctx: CommandContext, category: str, type: str):
+async def team_overview(ctx: CommandContext, category: str, type: str, clear_cache: bool = False):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
 
     tab_name = f"{category}_overview"
-    team_data = fetch_data_with_cache(client_gs, WAR_SHEET_ID, tab_name)
+    team_data = fetch_data_with_cache(client_gs, WAR_SHEET_ID, tab_name, use_cache=not clear_cache)
 
     if team_data:
         if type == "All Rosters":

@@ -34,10 +34,10 @@ def find_player(data, player_name, team_name):
     return None  # Return None if the player is not found in this sheet
 
 # Function to get roster information for a player from multiple sheets
-def fetch_roster_info(client_gs, spreadsheet_id, player_name):
+def fetch_roster_info(client_gs, spreadsheet_id, player_name, use_cache=True):
     sheet_names = ['WHSKY', 'TANGO', 'FXTRT']  # List of sheet names
     for sheet_name in sheet_names:
-        data = fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name)
+        data = fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name, use_cache=use_cache)
         roster_info = find_player(data, str(player_name), sheet_name)
         if roster_info:
             return roster_info  # Return the roster info if the player is found

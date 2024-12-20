@@ -70,6 +70,12 @@ client = Client(token=TOKEN)
                 {"name": "FXTRT", "value": "FXTRT"},
             ],
         },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
     ],
 )(team_overview)
 
@@ -83,6 +89,12 @@ client = Client(token=TOKEN)
             "description": "Enter player name exactly as it appears in the roster",
             "type": 3,  # STRING type
             "required": True,
+        },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
         },
     ],
 )(roster_position)
@@ -98,10 +110,16 @@ client = Client(token=TOKEN)
             "type": 3,  # STRING type
             "required": True,
         },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
     ],
 )(roster_t4s)
 
-# Register the LIST-ROSTER-ALTS command
+# Register the ROSTER-ALTS command
 @client.command(
     name="roster-alts",
     description="List roster alts for a specific team and type.",
@@ -128,6 +146,12 @@ client = Client(token=TOKEN)
                 {"name": "Alt", "value": "Alt"},
                 {"name": "X", "value": "X"},
             ],
+        },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
         },
     ],
 )(roster_alts)
@@ -184,6 +208,12 @@ client = Client(token=TOKEN)
             "name": "limit",
             "description": "Limit the number of entries returned",
             "type": 4,  # INTEGER type
+            "required": False,
+        },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
             "required": False,
         },
     ],
@@ -322,6 +352,12 @@ client = Client(token=TOKEN)
             "type": 4,  # INTEGER type
             "required": False,
         },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
     ],
 )(list_ranks)
 
@@ -344,6 +380,12 @@ client = Client(token=TOKEN)
             "name": "limit",
             "description": "Enter the number of players to display (default is all)",
             "type": 4,  # INTEGER type
+            "required": False,
+        },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
             "required": False,
         },
     ],
@@ -389,6 +431,12 @@ client = Client(token=TOKEN)
                 {"name": "Glam", "value": "glam"},
             ],
         },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
     ],
 )(list_ranks_roster)
 
@@ -396,6 +444,14 @@ client = Client(token=TOKEN)
 @client.command(
     name="list-name-changes",
     description="Fetch the list of recent name changes.",
+    options=[
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
+    ],
 )(list_name_changes)
 
 # KEEP-LOGISTICS command
@@ -415,6 +471,12 @@ client = Client(token=TOKEN)
             "type": 3,  # STRING type
             "required": False,
         },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
     ],
 )(keep_logistics)
 
@@ -429,10 +491,16 @@ client = Client(token=TOKEN)
             "type": 3,  # STRING type
             "required": True,
         },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
     ],
 )(rca_info)
 
-# RCA-LOGS command
+# LIST RCA-LOGS command
 @client.command(
     name="list-rca-logs",
     description="Fetch the list of RCA logs.",
@@ -453,6 +521,12 @@ client = Client(token=TOKEN)
             "name": "min_cap",
             "description": "Minimum Rein Cap to filter the logs",
             "type": 4,  # INTEGER type
+            "required": False,
+        },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
             "required": False,
         },
     ],

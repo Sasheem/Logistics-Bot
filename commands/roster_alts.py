@@ -5,7 +5,7 @@ from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_data_with_cache import fetch_data_with_cache
 
-async def roster_alts(ctx: CommandContext, team: str, type: str):
+async def roster_alts(ctx: CommandContext, team: str, type: str, clear_cache: bool = False):
     await ctx.defer()  # Defer the interaction to give more time
     spreadsheet_id = WAR_SHEET_ID
     sheet_name = f"{team}_type"
@@ -13,7 +13,7 @@ async def roster_alts(ctx: CommandContext, team: str, type: str):
 
     formatted_info = []
 
-    data = fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name)
+    data = fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name, use_cache=not clear_cache)
 
     current_t1 = current_t2 = current_t3 = None
 

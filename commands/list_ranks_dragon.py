@@ -5,14 +5,14 @@ from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_data_with_cache import fetch_data_with_cache
 
-async def list_ranks_dragon(ctx: CommandContext, type: str, limit: int = None):
+async def list_ranks_dragon(ctx: CommandContext, type: str, limit: int = None, clear_cache: bool = False):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
     rank_types = {
         "dragon-attack": "dragon_attack_rank",
         "dragon-defense": "dragon_defense_rank",
     }
     rank_type = rank_types.get(type)
-    players_info = fetch_data_with_cache(client_gs, WAR_SHEET_ID, rank_type)
+    players_info = fetch_data_with_cache(client_gs, WAR_SHEET_ID, rank_type, use_cache=not clear_cache)
     if players_info:
         if limit:
             players_info = players_info[:limit]

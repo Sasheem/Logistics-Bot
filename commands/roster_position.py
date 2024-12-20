@@ -7,21 +7,22 @@ from config.constants import WAR_SHEET_ID
 from utils.fetch_roster_info import fetch_roster_info
 from utils.fetch_data_with_cache import fetch_data_with_cache
 
-async def roster_position(ctx: CommandContext, name: str):
+async def roster_position(ctx: CommandContext, name: str, clear_cache: bool = False):
     await ctx.defer()  # Defer the interaction to give more time
     spreadsheet_id = WAR_SHEET_ID
     sheet_names = ['WHSKY', 'TANGO', 'FXTRT']
-    roster_info = fetch_roster_info(client_gs, spreadsheet_id, str(name).strip())  # Convert to string and remove leading and trailing spaces
+
+    # Fetch data with or without cache based on clear_cache parameter
+    roster_info = fetch_roster_info(client_gs, spreadsheet_id, str(name).strip(), use_cache=not clear_cache)
 
     # Soft match if no exact match found
     if not roster_info or not roster_info["T1"]:
-        sheet_names = ['WHSKY', 'TANGO', 'FXTRT']
         for sheet_name in sheet_names:
-            data = fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name)
+            data = fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name, use_cache=not clear_cache)
             soft_matches = process.extract(str(name), [str(entry[f'Name {sheet_name}']) for entry in data], scorer=fuzz.token_sort_ratio)
             best_match = soft_matches[0] if soft_matches else None
             if best_match and best_match[1] > 70:
-                roster_info = fetch_roster_info(client_gs, spreadsheet_id, best_match[0])
+                roster_info = fetch_roster_info(client_gs, spreadsheet_id, best_match[0], use_cache=not clear_cache)
                 break
 
     if roster_info and roster_info["T1"]:

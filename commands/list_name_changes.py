@@ -5,9 +5,9 @@ from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_data_with_cache import fetch_data_with_cache
 
-async def list_name_changes(ctx: CommandContext):
+async def list_name_changes(ctx: CommandContext, clear_cache: bool = False):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
-    name_changes_list = fetch_data_with_cache(client_gs, WAR_SHEET_ID, "recent_name_changes")
+    name_changes_list = fetch_data_with_cache(client_gs, WAR_SHEET_ID, "recent_name_changes", use_cache=not clear_cache)
     if name_changes_list:
         header = "{:<20} {:<20}\n".format("Old Name", "New Name")
         separator = "=" * 36 + "\n"
