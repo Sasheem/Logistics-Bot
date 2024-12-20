@@ -9,7 +9,7 @@ from utils.fetch_player_info import fetch_player_info
 from utils.fetch_data_with_cache import fetch_data_with_cache
 
 # use this
-async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str):
+async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str, clear_cache: bool = False):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
     
     stats_types = {
@@ -26,22 +26,22 @@ async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str):
         return
     
     # Fetch player info for both players
-    player_info1 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, name1.strip())  # Remove leading and trailing spaces
-    player_info2 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, name2.strip())
+    player_info1 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, name1.strip(), use_cache=not clear_cache)  # Remove leading and trailing spaces
+    player_info2 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, name2.strip(), use_cache=not clear_cache)
 
     # Soft match if no exact match found for player 1
     if not player_info1:
-        soft_matches = process.extract(name1, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type)], scorer=fuzz.token_sort_ratio)
+        soft_matches = process.extract(name1, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type, use_cache=not clear_cache)], scorer=fuzz.token_sort_ratio)
         best_match = soft_matches[0] if soft_matches else None
         if best_match and best_match[1] > 70:
-            player_info1 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, best_match[0])
+            player_info1 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, best_match[0], use_cache=not clear_cache)
 
     # Soft match if no exact match found for player 2
     if not player_info2:
-        soft_matches = process.extract(name2, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type)], scorer=fuzz.token_sort_ratio)
+        soft_matches = process.extract(name2, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type, use_cache=not clear_cache)], scorer=fuzz.token_sort_ratio)
         best_match = soft_matches[0] if soft_matches else None
         if best_match and best_match[1] > 70:
-            player_info2 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, best_match[0])
+            player_info2 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, best_match[0], use_cache=not clear_cache)
 
     if player_info1 and player_info2:
         title = f"{type.replace('-', ' ').title()} Stats Comparison"

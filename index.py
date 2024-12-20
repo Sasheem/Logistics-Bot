@@ -179,6 +179,12 @@ client = Client(token=TOKEN)
             "type": 3,  # STRING type
             "required": True,
         },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
     ],
 )(stats_power)
 
@@ -248,6 +254,12 @@ client = Client(token=TOKEN)
             "type": 3,  # STRING type
             "required": True,
         },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
     ],
 )(stats_compare)
 
@@ -310,6 +322,12 @@ client = Client(token=TOKEN)
             "description": "Enter player name exactly as you submitted stats",
             "type": 3,  # STRING type
             "required": True,
+        },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
         },
     ],
 )(rank)

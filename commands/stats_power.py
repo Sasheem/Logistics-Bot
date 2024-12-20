@@ -8,7 +8,7 @@ from config.constants import WAR_SHEET_ID
 from utils.fetch_player_info import fetch_player_info
 from utils.fetch_data_with_cache import fetch_data_with_cache
 
-async def stats_power(ctx: CommandContext, type: str, name: str):
+async def stats_power(ctx: CommandContext, type: str, name: str, clear_cache: bool = False):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
     stats_types = {
         "attack": "player_stats",
@@ -17,11 +17,11 @@ async def stats_power(ctx: CommandContext, type: str, name: str):
         "dragon-defense": "dragon_defense_stats",
     }
     stats_type = stats_types.get(type)
-    player_info = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, name.strip())  # Remove leading and trailing spaces
+    player_info = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, name.strip(), use_cache=not clear_cache)  # Remove leading and trailing spaces
 
     # Soft match if no exact match found
     if not player_info:
-        soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type)], scorer=fuzz.token_sort_ratio)
+        soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type, use_cache=not clear_cache)], scorer=fuzz.token_sort_ratio)
         best_match = soft_matches[0] if soft_matches else None
         if best_match and best_match[1] > 70:
             player_info = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, best_match[0])
