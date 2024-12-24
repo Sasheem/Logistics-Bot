@@ -1,6 +1,6 @@
 # commands/list_ranks.py
 
-from interactions import CommandContext
+from interactions import CommandContext, Embed
 from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_data_with_cache import fetch_data_with_cache
@@ -23,29 +23,61 @@ async def list_ranks(ctx: CommandContext, type: str, category: str, limit: int =
             players_info = players_info[:limit]
         title = f"{type.capitalize()} {category.capitalize()} Ranks"
         subtitle = f"**Showing top {limit} players**" if limit else ""
-        header = "{:<20} {:<10} {:<10}\n".format(
+
+        # Determine the emoji and color based on the category
+        if category == "inf":
+            icon = "🗡️"  # Sword emoji
+            color = 0x0000FF  # Blue color
+        elif category == "range":
+            icon = "🏹"  # Bow emoji
+            color = 0x00FF00  # Green color
+        elif category == "cav":
+            icon = "🐴"  # Horse emoji
+            color = 0xFF0000  # Red color
+        elif category == "t12":
+            icon = "👑"  # Crown emoji
+            color = 0xFFD700  # Gold color (Legendary)
+        elif category == "t11":
+            icon = "🔥"  # Fire emoji
+            color = 0xFFA500  # Orange color (Epic)
+        elif category == "t10":
+            icon = "😈"  # Devil face smile emoji
+            color = 0x800080  # Purple color (Exquisite)
+        elif category == "t9":
+            icon = "💎"  # Gem emoji
+            color = 0x00FFFF  # Light blue color (Fine)
+        elif category == "t8":
+            icon = "🍀"  # Four-leaf clover emoji
+            color = 0x00FF00  # Light green color (Common)
+        else:
+            icon = ""
+            color = 0xFFFFFF  # White color
+
+        header = "{:<18} {:<10} {:<12}\n".format(
             "Player Name", "Score", "Rank"
         )
-        separator = "=" * 36 + "\n"
-        formatted_info = f"# {title}\n{subtitle}\n```\n" + header + separator
-        messages = []
-        current_message = formatted_info
+        separator = "=" * 34 + "\n"
+        formatted_info = header + separator
 
         for player in players_info:
-            player_info = "{:<20} {:<10} {:<10}\n".format(
+            player_info = "{:<18} {:<10} {:<12}\n".format(
                 player["Player Name"], player["Score"], player["Rank"]
             )
-            if len(current_message) + len(player_info) + 3 > 2000:  # +3 for closing ```
-                current_message += "```"
-                messages.append(current_message)
-                current_message = "```\n" + header + separator + player_info
-            else:
-                current_message += player_info
+            formatted_info += player_info
 
-        current_message += "```"
-        messages.append(current_message)
+        # Split the formatted_info into chunks if it exceeds the Discord limit
+        chunks = [formatted_info[i:i + 4000] for i in range(0, len(formatted_info), 4000)]
 
-        for message in messages:
-            await ctx.send(message)
+        embeds = []
+        for chunk in chunks:
+            embed = Embed(
+                title=f"{title} {icon}",
+                description=f"{subtitle}\n```\n{chunk}```",
+                color=color
+            )
+            embeds.append(embed)
+
+        for embed in embeds:
+            await ctx.send(embeds=[embed])
     else:
         await ctx.send("No player data found.")

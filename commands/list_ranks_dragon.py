@@ -1,6 +1,6 @@
 # commands/list_ranks_dragon.py
 
-from interactions import CommandContext
+from interactions import CommandContext, Embed
 from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_data_with_cache import fetch_data_with_cache
@@ -17,30 +17,44 @@ async def list_ranks_dragon(ctx: CommandContext, type: str, limit: int = None, c
         if limit:
             players_info = players_info[:limit]
         title = f"{type.replace('-', ' ').title()} Ranks"
-        subtitle = f"Showing top {limit} players" if limit else ""
-        header = "{:<20} {:<10} {:<10}\n".format(
+        subtitle = f"**Showing top {limit} players**" if limit else ""
+
+        # Determine the emoji and color based on the type
+        if type == "dragon-attack":
+            icon = "⚔️ 🐉"  # Sword and dragon emoji
+            color = 0xFF0000  # Red color
+        elif type == "dragon-defense":
+            icon = "🛡️ 🐉"  # Shield and dragon emoji
+            color = 0x0000FF  # Blue color
+        else:
+            icon = ""
+            color = 0xFFFFFF  # White color
+
+        header = "{:<18} {:<10} {:<12}\n".format(
             "Player Name", "Score", "Rank"
         )
-        separator = "=" * 36 + "\n"
-        formatted_info = f"# {title} \n{subtitle}\n```\n" + header + separator
-        messages = []
-        current_message = formatted_info
+        separator = "=" * 34 + "\n"
+        formatted_info = header + separator
 
         for player in players_info:
-            player_info = "{:<20} {:<10} {:<10}\n".format(
+            player_info = "{:<18} {:<10} {:<12}\n".format(
                 player["Player Name"], player["Score"], player["Rank"]
             )
-            if len(current_message) + len(player_info) + 3 > 2000:  # +3 for closing ```
-                current_message += "```"
-                messages.append(current_message)
-                current_message = "```\n" + header + separator + player_info
-            else:
-                current_message += player_info
+            formatted_info += player_info
 
-        current_message += "```"
-        messages.append(current_message)
+        # Split the formatted_info into chunks if it exceeds the Discord limit
+        chunks = [formatted_info[i:i + 4000] for i in range(0, len(formatted_info), 4000)]
 
-        for message in messages:
-            await ctx.send(message)
+        embeds = []
+        for chunk in chunks:
+            embed = Embed(
+                title=f"{title} {icon}",
+                description=f"{subtitle}\n```\n{chunk}```",
+                color=color
+            )
+            embeds.append(embed)
+
+        for embed in embeds:
+            await ctx.send(embeds=[embed])
     else:
         await ctx.send("No player data found.")
