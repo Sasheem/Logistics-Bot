@@ -14,7 +14,6 @@ from commands.rank import rank
 from commands.list_ranks import list_ranks
 from commands.list_ranks_dragon import list_ranks_dragon
 from commands.list_ranks_roster import list_ranks_roster
-from commands.list_name_changes import list_name_changes
 from commands.keep_logistics import keep_logistics
 from commands.rca_info import rca_info
 from commands.list_rca_logs import list_rca_logs
@@ -22,6 +21,9 @@ from commands.name_change import name_change
 from commands.stats_compare import stats_compare
 # from commands.stats_review import stats_review
 # from commands.stats_analysis import stats_analysis
+from commands.list_name_changes import list_name_changes
+from commands.list_old_stats import list_old_stats
+from commands.active_alts import active_alts
 
 load_dotenv()
 
@@ -587,6 +589,57 @@ client = Client(token=TOKEN)
         },
     ],
 )(list_name_changes)
+
+# LIST OLD-STATS command
+@client.command(
+    name="old-stats",
+    description="List players with old stats based on the provided month category and optional tier filter.",
+    options=[
+        {
+            "name": "months",
+            "description": "Number of months to filter stats older than.",
+            "type": 4,  # INTEGER type
+            "required": True,
+        },
+        {
+            "name": "tier",
+            "description": "Optional tier to filter by (T12, T11, T10, T09, T08).",
+            "type": 3,  # STRING type
+            "required": False,
+            "choices": [
+                {"name": "T12", "value": "T12"},
+                {"name": "T11", "value": "T11"},
+                {"name": "T10", "value": "T10"},
+                {"name": "T09", "value": "T09"},
+                {"name": "T08", "value": "T08"}
+            ],
+        },
+    ],
+)(list_old_stats)
+
+# Register the command with the required option
+@client.command(
+    name="active-alts",
+    description="Add or remove a name from the active alts list and display the updated list.",
+    options=[
+        {
+            "name": "name",
+            "description": "Name of the alt to add or remove (accepts spaces).",
+            "type": 3,  # STRING type
+            "required": True,
+        },
+        {
+            "name": "action",
+            "description": "Action to perform (Add or Remove).",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "Add", "value": "Add"},
+                {"name": "Remove", "value": "Remove"}
+            ],
+        }
+    ]
+)(active_alts)
 
 # Event listener for when the bot is ready
 @client.event
