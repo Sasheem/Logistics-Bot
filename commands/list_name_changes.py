@@ -21,6 +21,11 @@ async def list_name_changes(ctx: CommandContext, clear_cache: bool = False):
             date = entry['Date']
             old_name = entry['Old Name']
             new_name = entry['New Name']
+            duration = entry.get('Duration', '')
+
+            if duration == "Short Term":
+                date += " (Temporary)"
+
             entry_info = f"{date}\n{old_name:<18} {new_name:<18}\n" + "-" * 30 + "\n"
             formatted_info += entry_info
 
