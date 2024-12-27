@@ -58,7 +58,7 @@ async def active_alts(ctx: CommandContext, name: str, action: str):
         for chunk in chunks:
             embed = Embed(
                 title=title,
-                description=f"{description}\n\n```\n{chunk}```",
+                description=f"```\n{chunk}```\n{description}\n",
                 color=color
             )
             embeds.append(embed)

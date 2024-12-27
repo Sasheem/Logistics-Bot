@@ -54,7 +54,7 @@ async def list_old_stats(ctx: CommandContext, months: int, tier: str = None):
         for chunk in chunks:
             embed = Embed(
                 title=f"{title} {icon}",
-                description=f"Stats older than {months} months\n\nTotal: {total_entries}\n\n```\n{chunk}```",
+                description=f"Stats older than {months} months\n```\n{chunk}```\nStats older than {months} months\n\nTotal: {total_entries}\n\n",
                 color=color
             )
             embeds.append(embed)
