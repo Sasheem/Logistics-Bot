@@ -23,6 +23,8 @@ async def list_old_stats(ctx: CommandContext, months: int, tier: str = None):
         cutoff_date = datetime.now() - timedelta(days=months * 30)
         active_alts_names = [entry['Name'].lower() for entry in active_alts_list]
 
+        filtered_entries = []
+
         for entry in old_stats_list:
             date_str = entry['Date']
             date = datetime.strptime(date_str, "%Y-%m-%d")
@@ -33,16 +35,26 @@ async def list_old_stats(ctx: CommandContext, months: int, tier: str = None):
 
                 if name.lower() not in active_alts_names and troop not in ["RCA", "Alt"] and (tier is None or entry_tier == tier):
                     entry_info = f"{date_str:<10} \n{name:<18} {entry_tier:<6} {troop:<6}\n" + "-" * 34 + "\n"
-                    formatted_info += entry_info
+                    filtered_entries.append(entry_info)
 
-        # Split the formatted_info into chunks if it exceeds the Discord limit
-        chunks = [formatted_info[i:i + 4000] for i in range(0, len(formatted_info), 4000)]
+        total_entries = len(filtered_entries)
+
+        # Split the filtered_entries into chunks if it exceeds the Discord limit
+        chunks = []
+        chunk = ""
+        for entry in filtered_entries:
+            if len(chunk) + len(entry) > 4000:
+                chunks.append(chunk)
+                chunk = ""
+            chunk += entry
+        if chunk:
+            chunks.append(chunk)
 
         embeds = []
         for chunk in chunks:
             embed = Embed(
                 title=f"{title} {icon}",
-                description=f"Stats older than {months} months\n\n```\n{chunk}```",
+                description=f"Stats older than {months} months\n\nTotal: {total_entries}\n\n```\n{chunk}```",
                 color=color
             )
             embeds.append(embed)
