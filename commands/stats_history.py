@@ -6,6 +6,7 @@ import math
 from config.google_sheets import client_gs
 from config.constants import ATTACK_SHEET_ID, DEFENSE_SHEET_ID, DRAGON_SHEET_ID
 from utils.fetch_data_with_cache import fetch_data_with_cache
+from utils.string_utils import normalize_string
 
 async def stats_history(ctx: CommandContext, player_name: str, category: str, limit: int = None, clear_cache: bool = False):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
@@ -24,16 +25,20 @@ async def stats_history(ctx: CommandContext, player_name: str, category: str, li
         tab_name = "dragon_history"
 
     player_stats_list = fetch_data_with_cache(client_gs, spreadsheet_id, tab_name, use_cache=not clear_cache)
-    
+
+    # Normalize the input name
+    normalized_player_name = normalize_string(player_name)
+
     # Exact match
-    player_entries = [entry for entry in player_stats_list if entry['Player'].lower() == player_name.lower()]
+    player_entries = [entry for entry in player_stats_list if normalize_string(entry['Player']) == normalized_player_name]
 
     # Soft match if no exact match found
     if not player_entries:
-        soft_matches = process.extract(player_name, [entry['Player'] for entry in player_stats_list], scorer=fuzz.token_sort_ratio)
+        soft_matches = process.extract(normalized_player_name, [normalize_string(entry['Player']) for entry in player_stats_list], scorer=fuzz.partial_ratio)
         best_match = soft_matches[0] if soft_matches else None
         if best_match and best_match[1] > 70:  # Threshold for a good match
-            player_entries = [entry for entry in player_stats_list if entry['Player'] == best_match[0]]
+            original_name = next(entry['Player'] for entry in player_stats_list if normalize_string(entry['Player']) == best_match[0])
+            player_entries = [entry for entry in player_stats_list if entry['Player'] == original_name]
 
     if limit:
         player_entries = player_entries[:limit]
@@ -74,4 +79,4 @@ async def stats_history(ctx: CommandContext, player_name: str, category: str, li
                 formatted_info.append(f"## Editor Notes:\n{entry['Editor Notes']}")
             await ctx.send(f"# {title}:\n" + "\n".join(formatted_info))
     else:
-        await ctx.send(f"## Oops, this is embarrassing..\n\nNo entries found for: **{player_name}**.\nPlease check the spelling and try again.")
+        await ctx.send(f"**Oops, this is embarrassing..**\n\nNo entries found for: **{player_name}**.\nPlease check the spelling and try again.")

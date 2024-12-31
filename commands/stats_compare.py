@@ -7,6 +7,7 @@ from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_player_info import fetch_player_info
 from utils.fetch_data_with_cache import fetch_data_with_cache
+from utils.string_utils import normalize_string
 
 # use this
 async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str, clear_cache: bool = False):
@@ -22,26 +23,33 @@ async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str, 
 
     # Check if the same name is entered for both players
     if name1.strip().lower() == name2.strip().lower():
-        await ctx.send("## Oops, this is embarrassing..\n\nYou entered the same name for both players. Please enter different names and try again.")
+        await ctx.send("**Oops, this is embarrassing..**\n\nYou entered the same name for both players. Please enter different names and try again.")
         return
-    
+
+    # Normalize the input names
+    normalized_name1 = normalize_string(name1)
+    normalized_name2 = normalize_string(name2)
+
     # Fetch player info for both players
-    player_info1 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, name1.strip(), use_cache=not clear_cache)  # Remove leading and trailing spaces
-    player_info2 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, name2.strip(), use_cache=not clear_cache)
+    player_info1 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, normalized_name1, use_cache=not clear_cache)
+    player_info2 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, normalized_name2, use_cache=not clear_cache)
 
     # Soft match if no exact match found for player 1
     if not player_info1:
-        soft_matches = process.extract(name1, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type, use_cache=not clear_cache)], scorer=fuzz.token_sort_ratio)
+        soft_matches = process.extract(normalized_name1, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type, use_cache=not clear_cache)], scorer=fuzz.partial_ratio)
         best_match = soft_matches[0] if soft_matches else None
         if best_match and best_match[1] > 70:
-            player_info1 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, best_match[0], use_cache=not clear_cache)
+            original_name1 = next(entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type, use_cache=not clear_cache) if normalize_string(entry['Player Name']) == best_match[0])
+            player_info1 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, original_name1, use_cache=not clear_cache)
 
     # Soft match if no exact match found for player 2
     if not player_info2:
-        soft_matches = process.extract(name2, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type, use_cache=not clear_cache)], scorer=fuzz.token_sort_ratio)
+        soft_matches = process.extract(normalized_name2, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type, use_cache=not clear_cache)], scorer=fuzz.partial_ratio)
         best_match = soft_matches[0] if soft_matches else None
         if best_match and best_match[1] > 70:
-            player_info2 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, best_match[0], use_cache=not clear_cache)
+            original_name2 = next(entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type, use_cache=not clear_cache) if normalize_string(entry['Player Name']) == best_match[0])
+            player_info2 = fetch_player_info(client_gs, WAR_SHEET_ID, stats_type, original_name2, use_cache=not clear_cache)
+
 
     if player_info1 and player_info2:
         title = f"{type.replace('-', ' ').title()} Stats Comparison"
@@ -158,4 +166,4 @@ async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str, 
             missing_players.append(name1)
         if not player_info2:
             missing_players.append(name2)
-        await ctx.send(f"## Oops, this is embarrassing..\n\nNo entries found for: **{', '.join(missing_players)}**.\nPlease check the spelling and try again.")
+        await ctx.send(f"**Oops, this is embarrassing..**\n\nNo entries found for: **{', '.join(missing_players)}**.\nPlease check the spelling and try again.")

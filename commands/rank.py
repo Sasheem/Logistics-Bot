@@ -7,6 +7,7 @@ from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_player_info import fetch_player_info
 from utils.fetch_data_with_cache import fetch_data_with_cache
+from utils.string_utils import normalize_string
 
 async def rank(ctx: CommandContext, type: str, name: str, clear_cache: bool = False):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
@@ -18,19 +19,26 @@ async def rank(ctx: CommandContext, type: str, name: str, clear_cache: bool = Fa
     }
     
     if type == "dragon":
-        attack_info = fetch_player_info(client_gs, WAR_SHEET_ID, "dragon_attack_rank", name.strip(), use_cache=not clear_cache)
-        defense_info = fetch_player_info(client_gs, WAR_SHEET_ID, "dragon_defense_rank", name.strip(), use_cache=not clear_cache)
+        # Normalize the input name
+        normalized_name = normalize_string(name)
+
+        attack_info = fetch_player_info(client_gs, WAR_SHEET_ID, "dragon_attack_rank", normalized_name, use_cache=not clear_cache)
+        defense_info = fetch_player_info(client_gs, WAR_SHEET_ID, "dragon_defense_rank", normalized_name, use_cache=not clear_cache)
+
         
         # Soft match if no exact match found
         if not attack_info and not defense_info:
-            soft_matches_attack = process.extract(name, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, "dragon_attack_rank", use_cache=not clear_cache)], scorer=fuzz.token_sort_ratio)
-            soft_matches_defense = process.extract(name, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, "dragon_defense_rank", use_cache=not clear_cache)], scorer=fuzz.token_sort_ratio)
+            soft_matches_attack = process.extract(normalized_name, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, "dragon_attack_rank", use_cache=not clear_cache)], scorer=fuzz.partial_ratio)
+            soft_matches_defense = process.extract(normalized_name, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, "dragon_defense_rank", use_cache=not clear_cache)], scorer=fuzz.partial_ratio)
             best_match_attack = soft_matches_attack[0] if soft_matches_attack else None
             best_match_defense = soft_matches_defense[0] if soft_matches_defense else None
             if best_match_attack and best_match_attack[1] > 70:
-                attack_info = fetch_player_info(client_gs, WAR_SHEET_ID, "dragon_attack_rank", best_match_attack[0], use_cache=not clear_cache)
+                original_name_attack = next(entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, "dragon_attack_rank", use_cache=not clear_cache) if normalize_string(entry['Player Name']) == best_match_attack[0])
+                attack_info = fetch_player_info(client_gs, WAR_SHEET_ID, "dragon_attack_rank", original_name_attack, use_cache=not clear_cache)
             if best_match_defense and best_match_defense[1] > 70:
-                defense_info = fetch_player_info(client_gs, WAR_SHEET_ID, "dragon_defense_rank", best_match_defense[0], use_cache=not clear_cache)
+                original_name_defense = next(entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, "dragon_defense_rank", use_cache=not clear_cache) if normalize_string(entry['Player Name']) == best_match_defense[0])
+                defense_info = fetch_player_info(client_gs, WAR_SHEET_ID, "dragon_defense_rank", original_name_defense, use_cache=not clear_cache)
+
         
         title = f"Dragon Ranks: {name}"
         formatted_info = [f"## {title}"]
@@ -64,14 +72,20 @@ async def rank(ctx: CommandContext, type: str, name: str, clear_cache: bool = Fa
         await ctx.send("\n".join(formatted_info))
     else:
         rank_type = rank_types.get(type)
-        player_info = fetch_player_info(client_gs, WAR_SHEET_ID, rank_type, name.strip(), use_cache=not clear_cache)
+        # Normalize the input name
+        normalized_name = normalize_string(name)
+
+        player_info = fetch_player_info(client_gs, WAR_SHEET_ID, rank_type, normalized_name, use_cache=not clear_cache)
+
         
         # Soft match if no exact match found
         if not player_info:
-            soft_matches = process.extract(name, [entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, rank_type, use_cache=not clear_cache)], scorer=fuzz.token_sort_ratio)
+            soft_matches = process.extract(normalized_name, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, rank_type, use_cache=not clear_cache)], scorer=fuzz.partial_ratio)
             best_match = soft_matches[0] if soft_matches else None
             if best_match and best_match[1] > 70:
-                player_info = fetch_player_info(client_gs, WAR_SHEET_ID, rank_type, best_match[0], use_cache=not clear_cache)
+                original_name = next(entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, rank_type, use_cache=not clear_cache) if normalize_string(entry['Player Name']) == best_match[0])
+                player_info = fetch_player_info(client_gs, WAR_SHEET_ID, rank_type, original_name, use_cache=not clear_cache)
+
         
         if player_info:
             title = f"{type.replace('-', ' ').title()} Ranks: {name}"
@@ -106,4 +120,4 @@ async def rank(ctx: CommandContext, type: str, name: str, clear_cache: bool = Fa
             
             await ctx.send("\n".join(formatted_info))
         else:
-            await ctx.send(f"## Oops, this is embarrassing..\n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
+            await ctx.send(f"**Oops, this is embarrassing..**\n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")

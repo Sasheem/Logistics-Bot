@@ -5,6 +5,7 @@ from rapidfuzz import process, fuzz
 from config.google_sheets import client_gs
 from config.constants import ROSTER_SHEET_ID
 from utils.fetch_data_with_cache import fetch_data_with_cache
+from utils.string_utils import normalize_string
 
 async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_name: str = None, clear_cache: bool = False):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
@@ -17,30 +18,39 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
     entries = []
     name_type = ""
     if keep_name:
+        # Normalize the input name
+        normalized_keep_name = normalize_string(keep_name)
         # Exact match
-        entries = [record for record in keeps_list if str(record['Main Keep Name']).lower() == keep_name.lower()]
+        entries = [record for record in keeps_list if normalize_string(record['Main Keep Name']) == normalized_keep_name]
+        
 
         # Soft match if no exact match found
         if not entries:
             # Ensure all elements in the list are strings
-            names = [record['Main Keep Name'] for record in keeps_list if isinstance(record['Main Keep Name'], str)]
-            soft_matches = process.extract(keep_name, names, scorer=fuzz.token_sort_ratio)
+            names = [normalize_string(record['Main Keep Name']) for record in keeps_list if isinstance(record['Main Keep Name'], str)]
+            soft_matches = process.extract(normalized_keep_name, names, scorer=fuzz.partial_ratio)
             best_match = soft_matches[0] if soft_matches else None
             if best_match and best_match[1] > 70:  # Threshold for a good match
-                entries = [record for record in keeps_list if record['Main Keep Name'] == best_match[0]]
+                original_name = next(record['Main Keep Name'] for record in keeps_list if normalize_string(record['Main Keep Name']) == best_match[0])
+                entries = [record for record in keeps_list if record['Main Keep Name'] == original_name]
+
     elif discord_name:
         name_type = "discord username"
+        # Normalize the input name
+        normalized_discord_name = normalize_string(discord_name)
         # Exact match
-        entries = [record for record in keeps_list if str(record['Discord Name']).lower() == discord_name.lower()]
+        entries = [record for record in keeps_list if normalize_string(record['Discord Name']) == normalized_discord_name]
 
         # Soft match if no exact match found
         if not entries:
             # Ensure all elements in the list are strings
-            names = [record['Discord Name'] for record in keeps_list if isinstance(record['Discord Name'], str)]
-            soft_matches = process.extract(discord_name, names, scorer=fuzz.token_sort_ratio)
+            names = [normalize_string(record['Discord Name']) for record in keeps_list if isinstance(record['Discord Name'], str)]
+            soft_matches = process.extract(normalized_discord_name, names, scorer=fuzz.partial_ratio)
             best_match = soft_matches[0] if soft_matches else None
             if best_match and best_match[1] > 70:  # Threshold for a good match
-                entries = [record for record in keeps_list if record['Discord Name'] == best_match[0]]
+                original_name = next(record['Discord Name'] for record in keeps_list if normalize_string(record['Discord Name']) == best_match[0])
+                entries = [record for record in keeps_list if record['Discord Name'] == original_name]
+
     else:
         await ctx.send("Please provide either a Keep name or a Discord name.")
         return
@@ -61,6 +71,6 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
             await ctx.send(message)
     else:
         if keep_name:
-            await ctx.send(f"## Oops, this is embarrassing..\n\nSearched by {name_type}.\nNo entries found for: **{keep_name}**.\nPlease check the spelling and try again.")
+            await ctx.send(f"**Oops, this is embarrassing..**\n\nSearched by {name_type}.\nNo entries found for: **{keep_name}**.\nPlease check the spelling and try again.")
         else:
-            await ctx.send(f"## Oops, this is embarrassing..\n\nSearched by {name_type}.\nNo entries found for: **{discord_name}**.\nPlease check the spelling and try again.")
+            await ctx.send(f"**Oops, this is embarrassing..**\n\nSearched by {name_type}.\nNo entries found for: **{discord_name}**.\nPlease check the spelling and try again.")
