@@ -46,7 +46,7 @@ client = Client(token=TOKEN)
 # TEAM-OVERVIEW command
 @client.command(
     name="team-overview",
-    description="Fetch the team overview for a specific category and type.",
+    description="Breakdown of troop tier/types for team and rosters.",
     options=[
         {
             "name": "category",
@@ -194,7 +194,7 @@ client = Client(token=TOKEN)
 # STATS-HISTORY command
 @client.command(
     name="stats-history",
-    description="Fetch the stats history for a specific player.",
+    description="Fetch all stats submitted for a specific player.",
     options=[
         {
             "name": "player_name",
@@ -415,7 +415,7 @@ client = Client(token=TOKEN)
 # RANKS ROSTER command
 @client.command(
     name="ranks-roster",
-    description="Fetch the ranks for a specific team and category.",
+    description="Fetch ranks for WHSKY, TANGO, or FXTRT by category.",
     options=[
         {
             "name": "team",
@@ -464,7 +464,7 @@ client = Client(token=TOKEN)
 # KEEP-LOGISTICS command
 @client.command(
     name="keep-logistics",
-    description="Fetch the logistics for a specific keep or Discord name.",
+    description="Fetch the keep logistics by Keep Name or Discord Name.",
     options=[
         {
             "name": "keep_name",
@@ -542,7 +542,7 @@ client = Client(token=TOKEN)
 # NAME CHANGE command
 @client.command(
     name="name-change",
-    description="Change a player's name in the specified sheet and tab.",
+    description="Change a player's name in the specified stat sheet.",
     options=[
         {
             "name": "old_name",
@@ -645,7 +645,7 @@ client = Client(token=TOKEN)
 # REMOVE PLAYER command
 @client.command(
     name="remove-player",
-    description="Remove a player from the specified sheet and tab.",
+    description="Remove a player from the specified stat sheet.",
     options=[
         {
             "name": "name",
