@@ -24,6 +24,7 @@ from commands.stats_compare import stats_compare
 from commands.list_name_changes import list_name_changes
 from commands.list_old_stats import list_old_stats
 from commands.active_alts import active_alts
+from commands.remove_player import remove_player
 
 load_dotenv()
 
@@ -617,7 +618,7 @@ client = Client(token=TOKEN)
     ],
 )(list_old_stats)
 
-# Register the command with the required option
+# ACTIVE ALTS command
 @client.command(
     name="active-alts",
     description="Add or remove a name from the active alts list and display the updated list.",
@@ -640,6 +641,35 @@ client = Client(token=TOKEN)
         }
     ]
 )(active_alts)
+
+# REMOVE PLAYER command
+@client.command(
+    name="remove-player",
+    description="Remove a player from the specified sheet and tab.",
+    options=[
+        {
+            "name": "name",
+            "description": "The name of the player to be removed",
+            "type": 3,  # STRING type
+            "required": True,
+        },
+        {
+            "name": "option",
+            "description": "Select the sheet and tab to update",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "TEST", "value": "TEST"},
+                {"name": "Attack 89", "value": "Attack 89"},
+                {"name": "Defense 89", "value": "Defense 89"},
+                {"name": "Dragon 89", "value": "Dragon 89"},
+                {"name": "Attack 33", "value": "Attack 33"},
+                {"name": "Defense 33", "value": "Defense 33"},
+                {"name": "Dragon 33", "value": "Dragon 33"},
+            ],
+        },
+    ],
+)(remove_player)
 
 # Event listener for when the bot is ready
 @client.event
