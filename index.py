@@ -172,8 +172,7 @@ client = Client(token=TOKEN)
             "choices": [
                 {"name": "Attack", "value": "attack"},
                 {"name": "Defense", "value": "defense"},
-                {"name": "Dragon Attack", "value": "dragon-attack"},
-                {"name": "Dragon Defense", "value": "dragon-defense"},
+                {"name": "Dragon", "value": "dragon"},
             ],
         },
         {
