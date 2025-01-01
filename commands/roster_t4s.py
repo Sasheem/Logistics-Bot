@@ -19,9 +19,9 @@ async def roster_t4s(ctx: CommandContext, name: str, clear_cache: bool = False):
     for sheet_name in sheet_names:
         data = fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name, use_cache=not clear_cache)
         normalized_data = [normalize_string(entry[f'Name {sheet_name}']) for entry in data]
-        soft_matches = process.extract(normalized_name, normalized_data, scorer=fuzz.partial_ratio)
+        soft_matches = process.extract(normalized_name, normalized_data, scorer=fuzz.ratio)
         best_match = soft_matches[0] if soft_matches else None
-        if best_match and best_match[1] > 70:
+        if best_match and best_match[1] > 80:
             t3_index = next((i for i, entry in enumerate(data) if normalize_string(entry[f'Name {sheet_name}']) == best_match[0]), None)
             if t3_index is not None:
                 # Check if the found player is a T3

@@ -28,14 +28,14 @@ async def rank(ctx: CommandContext, type: str, name: str, clear_cache: bool = Fa
         
         # Soft match if no exact match found
         if not attack_info and not defense_info:
-            soft_matches_attack = process.extract(normalized_name, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, "dragon_attack_rank", use_cache=not clear_cache)], scorer=fuzz.partial_ratio)
-            soft_matches_defense = process.extract(normalized_name, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, "dragon_defense_rank", use_cache=not clear_cache)], scorer=fuzz.partial_ratio)
+            soft_matches_attack = process.extract(normalized_name, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, "dragon_attack_rank", use_cache=not clear_cache)], scorer=fuzz.ratio)
+            soft_matches_defense = process.extract(normalized_name, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, "dragon_defense_rank", use_cache=not clear_cache)], scorer=fuzz.ratio)
             best_match_attack = soft_matches_attack[0] if soft_matches_attack else None
             best_match_defense = soft_matches_defense[0] if soft_matches_defense else None
-            if best_match_attack and best_match_attack[1] > 70:
+            if best_match_attack and best_match_attack[1] > 80:
                 original_name_attack = next(entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, "dragon_attack_rank", use_cache=not clear_cache) if normalize_string(entry['Player Name']) == best_match_attack[0])
                 attack_info = fetch_player_info(client_gs, WAR_SHEET_ID, "dragon_attack_rank", original_name_attack, use_cache=not clear_cache)
-            if best_match_defense and best_match_defense[1] > 70:
+            if best_match_defense and best_match_defense[1] > 80:
                 original_name_defense = next(entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, "dragon_defense_rank", use_cache=not clear_cache) if normalize_string(entry['Player Name']) == best_match_defense[0])
                 defense_info = fetch_player_info(client_gs, WAR_SHEET_ID, "dragon_defense_rank", original_name_defense, use_cache=not clear_cache)
 
@@ -80,9 +80,10 @@ async def rank(ctx: CommandContext, type: str, name: str, clear_cache: bool = Fa
         
         # Soft match if no exact match found
         if not player_info:
-            soft_matches = process.extract(normalized_name, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, rank_type, use_cache=not clear_cache)], scorer=fuzz.partial_ratio)
+            soft_matches = process.extract(normalized_name, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, rank_type, use_cache=not clear_cache)], scorer=fuzz.ratio)
+
             best_match = soft_matches[0] if soft_matches else None
-            if best_match and best_match[1] > 70:
+            if best_match and best_match[1] > 80:
                 original_name = next(entry['Player Name'] for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, rank_type, use_cache=not clear_cache) if normalize_string(entry['Player Name']) == best_match[0])
                 player_info = fetch_player_info(client_gs, WAR_SHEET_ID, rank_type, original_name, use_cache=not clear_cache)
 

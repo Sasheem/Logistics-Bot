@@ -1,5 +1,3 @@
-# commands/keep_logistics.py
-
 from interactions import CommandContext
 from rapidfuzz import process, fuzz
 from config.google_sheets import client_gs
@@ -28,9 +26,9 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
         if not entries:
             # Ensure all elements in the list are strings
             names = [normalize_string(record['Main Keep Name']) for record in keeps_list if isinstance(record['Main Keep Name'], str)]
-            soft_matches = process.extract(normalized_keep_name, names, scorer=fuzz.partial_ratio)
+            soft_matches = process.extract(normalized_keep_name, names, scorer=fuzz.ratio)
             best_match = soft_matches[0] if soft_matches else None
-            if best_match and best_match[1] > 70:  # Threshold for a good match
+            if best_match and best_match[1] > 80:  # Threshold for a good match
                 original_name = next(record['Main Keep Name'] for record in keeps_list if normalize_string(record['Main Keep Name']) == best_match[0])
                 entries = [record for record in keeps_list if record['Main Keep Name'] == original_name]
 
@@ -45,9 +43,9 @@ async def keep_logistics(ctx: CommandContext, keep_name: str = None, discord_nam
         if not entries:
             # Ensure all elements in the list are strings
             names = [normalize_string(record['Discord Name']) for record in keeps_list if isinstance(record['Discord Name'], str)]
-            soft_matches = process.extract(normalized_discord_name, names, scorer=fuzz.partial_ratio)
+            soft_matches = process.extract(normalized_discord_name, names, scorer=fuzz.ratio)
             best_match = soft_matches[0] if soft_matches else None
-            if best_match and best_match[1] > 70:  # Threshold for a good match
+            if best_match and best_match[1] > 80:  # Threshold for a good match
                 original_name = next(record['Discord Name'] for record in keeps_list if normalize_string(record['Discord Name']) == best_match[0])
                 entries = [record for record in keeps_list if record['Discord Name'] == original_name]
 

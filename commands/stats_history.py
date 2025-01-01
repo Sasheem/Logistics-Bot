@@ -1,5 +1,3 @@
-# commands/stats_history.py
-
 from interactions import CommandContext
 from rapidfuzz import process, fuzz
 import math
@@ -34,9 +32,9 @@ async def stats_history(ctx: CommandContext, player_name: str, category: str, li
 
     # Soft match if no exact match found
     if not player_entries:
-        soft_matches = process.extract(normalized_player_name, [normalize_string(entry['Player']) for entry in player_stats_list], scorer=fuzz.partial_ratio)
+        soft_matches = process.extract(normalized_player_name, [normalize_string(entry['Player']) for entry in player_stats_list], scorer=fuzz.ratio)
         best_match = soft_matches[0] if soft_matches else None
-        if best_match and best_match[1] > 70:  # Threshold for a good match
+        if best_match and best_match[1] > 80:  # Threshold for a good match
             original_name = next(entry['Player'] for entry in player_stats_list if normalize_string(entry['Player']) == best_match[0])
             player_entries = [entry for entry in player_stats_list if entry['Player'] == original_name]
 
