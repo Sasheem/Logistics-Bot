@@ -466,16 +466,10 @@ client = Client(token=TOKEN)
     description="Fetch the keep logistics by Keep Name or Discord Name.",
     options=[
         {
-            "name": "keep_name",
-            "description": "Enter the Keep's name",
+            "name": "name",
+            "description": "Enter the Keep's name or Discord name",
             "type": 3,  # STRING type
-            "required": False,
-        },
-        {
-            "name": "discord_name",
-            "description": "Enter the Discord name",
-            "type": 3,  # STRING type
-            "required": False,
+            "required": True,
         },
         {
             "name": "clear_cache",
