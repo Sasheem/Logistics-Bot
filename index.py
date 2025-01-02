@@ -1,5 +1,5 @@
 import discord
-from interactions import Client
+from interactions import Client, OptionType
 import os 
 from dotenv import load_dotenv
 
@@ -19,7 +19,7 @@ from commands.rca_info import rca_info
 from commands.list_rca_logs import list_rca_logs
 from commands.name_change import name_change
 from commands.stats_compare import stats_compare
-# from commands.stats_review import stats_review
+from commands.stats_review import stats_review
 # from commands.stats_analysis import stats_analysis
 from commands.list_name_changes import list_name_changes
 from commands.list_old_stats import list_old_stats
@@ -266,23 +266,36 @@ client = Client(token=TOKEN)
 )(stats_compare)
 
 # STATS REVIEW command
-# @client.command(
-#     name="stats-review",
-#     description="Fetch list of submissions needing review. Unavaiable at the moment.",
-#     options=[
-#         {
-#             "name": "type",
-#             "description": "Enter the type of stats (attack, defense, dragon)",
-#             "type": 3,  # STRING type
-#             "required": True,
-#             "choices": [
-#                 {"name": "attack", "value": "attack"},
-#                 {"name": "defense", "value": "defense"},
-#                 {"name": "dragon", "value": "dragon"},
-#             ],
-#         },
-#     ],
-# )(stats_review)
+@client.command(
+    name="stats-review",
+    description="Fetch list of submissions needing review.",
+    options=[
+        {
+            "name": "type",
+            "description": "Enter the type of stats (attack, defense, dragon)",
+            "type": OptionType.STRING,
+            "required": True,
+            "choices": [
+                {"name": "attack", "value": "attack"},
+                {"name": "defense", "value": "defense"},
+                {"name": "dragon", "value": "dragon"},
+            ],
+        },
+        {
+            "name": "filter_by",
+            "description": "Filter the stats by a specific criterion",
+            "type": OptionType.STRING,
+            "required": True,
+            "choices": [
+                {"name": "New", "value": "New"},
+                {"name": "Duplicates", "value": "Duplicates"},
+                {"name": "Last Week", "value": "Last Week"},
+                {"name": "Last Month", "value": "Last Month"},
+                {"name": "Over a month", "value": "Over a month"}
+            ]
+        }
+    ]
+)(stats_review)
 
 # STATS ANALYSIS command
 # @client.command(

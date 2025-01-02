@@ -10,3 +10,7 @@ def fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name, use_cache=True)
         cache["data"][sheet_name] = sheet.get_all_records()
         cache["timestamp"] = current_time
     return cache["data"][sheet_name]
+
+def clear_cache(sheet_name):
+    if sheet_name in cache["data"]:
+        del cache["data"][sheet_name]
