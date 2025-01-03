@@ -37,7 +37,7 @@ async def list_roster_notes(ctx: CommandContext):
     # Create the Embed
     embed = Embed(
         title="Roster Notes",
-        description=f"Date Range: \n{start_of_week.strftime('%Y-%m-%d')} to {end_of_week.strftime('%Y-%m-%d')}\n\nTotal Notes: {len(filtered_notes)}\n\n{formatted_notes}",
+        description=f"Date Range: \n{start_of_week.strftime('%Y-%m-%d')} to {end_of_week.strftime('%Y-%m-%d')}\n\nTotal Notes: {len(filtered_notes)}\n\n{formatted_notes}\n\nTotal Notes: {len(filtered_notes)}\n\n",
         color=0x8B008B  # Deep magenta color
     )
 
