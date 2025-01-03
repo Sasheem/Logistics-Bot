@@ -8,6 +8,9 @@ from commands.team_overview import team_overview
 from commands.roster_position import roster_position
 from commands.roster_t4s import roster_t4s
 from commands.roster_alts import roster_alts
+from commands.list_roster_notes import list_roster_notes
+from commands.roster_notes_add import roster_notes_add
+from commands.roster_notes_remove import roster_notes_remove
 from commands.stats_power import stats_power
 from commands.stats_history import stats_history
 from commands.rank import rank
@@ -158,6 +161,63 @@ client = Client(token=TOKEN)
         },
     ],
 )(roster_alts)
+
+# ROSTER NOTES command
+@client.command(
+    name="rosternotes",
+    description="List the roster notes for the current week",
+    options=[
+        {
+            "name": "clear_notes",
+            "description": "Clear all roster notes (true/false)",
+            "type": OptionType.BOOLEAN,
+            "required": False
+        }
+    ]
+)(list_roster_notes)
+
+# ROSTER NOTES ADD command
+@client.command(
+    name="rosternotes-add",
+    description="Add a note to the roster",
+    options=[
+        {
+            "name": "subject",
+            "description": "The subject of the note (max 50 characters)",
+            "type": OptionType.STRING,
+            "required": True,
+            "max_length": 50
+        },
+        {
+            "name": "note",
+            "description": "The content of the note",
+            "type": OptionType.STRING,
+            "required": True,
+        },
+        {
+            "name": "author",
+            "description": "The author of the note (max 30 characters)",
+            "type": OptionType.STRING,
+            "required": True,
+            "max_length": 30
+        }
+    ]
+)(roster_notes_add)
+
+# ROSTER NOTES REMOVE command
+@client.command(
+    name="rosternotes-remove",
+    description="Remove a note from the roster",
+    options=[
+        {
+            "name": "subject",
+            "description": "The subject of the note to remove (case-insensitive)",
+            "type": OptionType.STRING,
+            "required": True,
+            "max_length": 50
+        }
+    ]
+)(roster_notes_remove)
 
 # STATS POWER command
 @client.command(
