@@ -4,6 +4,7 @@ from interactions import CommandContext
 from config.constants import ATTACK_SHEET_ID, DEFENSE_SHEET_ID, DRAGON_SHEET_ID, ROSTER_SHEET_ID, RCA_SHEET_ID, TEST_SHEET_ID, ATTACK_SHEET_ID_33, DEFENSE_SHEET_ID_33, DRAGON_SHEET_ID_33
 from utils.update_column_data import update_column_data
 from utils.fetch_column_data import fetch_column_data
+from utils.add_name_change_note import add_name_change_note
 
 # Define the sheet and tab names for each option
 SHEET_TABS = {
@@ -59,5 +60,9 @@ async def name_change(ctx: CommandContext, old_name: str, new_name: str, option:
 
     # Update the sheet with the modified data
     update_column_data(sheet_id, tab_name, column_index, updated_data)
+
+    # Add a custom note if the option is "Active Keeps"
+    if option == "Active Keeps":
+        await add_name_change_note(ctx, old_name, new_name, ctx.author.name)
 
     await ctx.send(f"## Name change \nUpdated {change_count} instance(s) of \"{old_name}\" to **\"{new_name}\"** in {option}.")
