@@ -8,6 +8,7 @@ async def roster_notes_add(ctx: CommandContext, subject: str, note: str, author:
 
     # Open the Google Sheet
     sheet = client_gs.open_by_key(ROSTER_SHEET_ID).worksheet("roster_notes")
+    backup_sheet = client_gs.open_by_key(ROSTER_SHEET_ID).worksheet("roster_notes_backup")
     
     # Check for duplicate subjects (case-insensitive)
     existing_notes = sheet.get_all_records()
@@ -20,5 +21,8 @@ async def roster_notes_add(ctx: CommandContext, subject: str, note: str, author:
     current_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     new_note = [current_date, subject, note, author]
     sheet.append_row(new_note)
+
+    # Backup the new note to the backup sheet
+    backup_sheet.append_row(new_note)
     
     await ctx.send(f"Note added successfully:\n**Subject:** {subject}\n**Author:** {author}\n**Note:** \n{note}\n")

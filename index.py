@@ -11,6 +11,7 @@ from commands.roster_alts import roster_alts
 from commands.list_roster_notes import list_roster_notes
 from commands.roster_notes_add import roster_notes_add
 from commands.roster_notes_remove import roster_notes_remove
+from commands.roster_notes_manage import roster_notes_manage
 from commands.stats_power import stats_power
 from commands.stats_history import stats_history
 from commands.rank import rank
@@ -163,18 +164,39 @@ client = Client(token=TOKEN)
 )(roster_alts)
 
 # ROSTER NOTES command
+# Command registration for list_roster_notes
+
 @client.command(
     name="rosternotes",
-    description="List the roster notes for the current week",
+    description="List the roster notes for the current week"
+)(list_roster_notes)
+
+# ROSTERNOTES MANAGE command
+@client.command(
+    name="rosternotes-manage",
+    description="Manage the roster notes",
     options=[
         {
             "name": "clear_notes",
             "description": "Clear all roster notes (true/false)",
             "type": OptionType.BOOLEAN,
             "required": False
+        },
+        {
+            "name": "restore_backup",
+            "description": "Restore roster notes from backup (true/false)",
+            "type": OptionType.BOOLEAN,
+            "required": False
+        },
+        {
+            "name": "clear_backup",
+            "description": "Clear the backup roster notes (true/false)",
+            "type": OptionType.BOOLEAN,
+            "required": False
         }
     ]
-)(list_roster_notes)
+)(roster_notes_manage)
+
 
 # ROSTER NOTES ADD command
 @client.command(
