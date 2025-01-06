@@ -4,9 +4,11 @@ from interactions import CommandContext, Embed
 from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_data_with_cache import fetch_data_with_cache
+from utils.last_updated import last_updated
 
 async def list_ranks(ctx: CommandContext, type: str, category: str, limit: int = None, clear_cache: bool = False):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
+
     rank_types = {
         "attack": f"team_rank_{category}",
         "defense": f"team_defense_rank_{category}",
@@ -72,7 +74,7 @@ async def list_ranks(ctx: CommandContext, type: str, category: str, limit: int =
         for chunk in chunks:
             embed = Embed(
                 title=f"{title} {icon}",
-                description=f"{subtitle}\n```\n{chunk}```",
+                description=f"{subtitle}\n\n```\n{chunk}```\n\nLast Updated: **{last_updated()}**",
                 color=color
             )
             embeds.append(embed)

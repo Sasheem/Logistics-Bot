@@ -4,6 +4,7 @@ from interactions import CommandContext, Embed
 from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_data_with_cache import fetch_data_with_cache
+from utils.last_updated import last_updated
 
 async def list_name_changes(ctx: CommandContext, clear_cache: bool = False):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
@@ -36,7 +37,7 @@ async def list_name_changes(ctx: CommandContext, clear_cache: bool = False):
         for chunk in chunks:
             embed = Embed(
                 title=f"{title} {icon}",
-                description=f"```\n{chunk}```",
+                description=f"```\n{chunk}```\n\nLast Updated: **{last_updated()}**",
                 color=color
             )
             embeds.append(embed)
