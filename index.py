@@ -24,7 +24,7 @@ from commands.list_rca_logs import list_rca_logs
 from commands.name_change import name_change
 from commands.stats_compare import stats_compare
 from commands.stats_review import stats_review
-# from commands.stats_analysis import stats_analysis
+from commands.stats_analysis import stats_analysis
 from commands.list_name_changes import list_name_changes
 from commands.list_old_stats import list_old_stats
 from commands.active_alts import active_alts
@@ -347,56 +347,74 @@ client = Client(token=TOKEN)
     ],
 )(stats_compare)
 
-# STATS REVIEW command
+# STATS ANALYSIS command
 @client.command(
-    name="stats-review",
-    description="Fetch list of submissions needing review.",
+    name="stats-analysis",
+    description="Analyze the stats of a player against the average stats.",
     options=[
         {
             "name": "type",
-            "description": "Enter the type of stats (attack, defense, dragon)",
-            "type": OptionType.STRING,
+            "description": "Enter the type of stats (attack, defense)",
+            "type": 3,  # STRING type
             "required": True,
             "choices": [
                 {"name": "attack", "value": "attack"},
                 {"name": "defense", "value": "defense"},
-                {"name": "dragon", "value": "dragon"},
             ],
         },
         {
-            "name": "filter_by",
-            "description": "Filter the stats by a specific criterion",
-            "type": OptionType.STRING,
+            "name": "tier",
+            "description": "Enter the troop tier (All, T12, T11, T10, T09, T08)",
+            "type": 3,  # STRING type
             "required": True,
             "choices": [
-                {"name": "New", "value": "New"},
-                {"name": "Duplicates", "value": "Duplicates"},
-                {"name": "Last Week", "value": "Last Week"},
-                {"name": "Last Month", "value": "Last Month"},
-                {"name": "Over a month", "value": "Over a month"}
-            ]
-        }
-    ]
-)(stats_review)
-
-# STATS ANALYSIS command
-# @client.command(
-#     name="stats-analysis",
-#     description="Calculate analysis vs team (or tier) for given player. Unavaiable at the moment.",
-#     options=[
-#         {
-#             "name": "type",
-#             "description": "Enter the type of stats (attack, defense, dragon)",
-#             "type": 3,  # STRING type
-#             "required": True,
-#             "choices": [
-#                 {"name": "attack", "value": "attack"},
-#                 {"name": "defense", "value": "defense"},
-#                 {"name": "dragon", "value": "dragon"},
-#             ],
-#         },
-#     ],
-# )(stats_analysis)
+                {"name": "All", "value": "All"},
+                {"name": "T12", "value": "T12"},
+                {"name": "T11", "value": "T11"},
+                {"name": "T10", "value": "T10"},
+                {"name": "T09", "value": "T09"},
+                {"name": "T08", "value": "T08"},
+            ],
+        },
+        {
+            "name": "troop",
+            "description": "Enter the troop type",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "All", "value": "All"},
+                {"name": "Inf", "value": "inf"},
+                {"name": "Ranged", "value": "Ranged"},
+                {"name": "Cav", "value": "Cav"},
+            ],
+        },
+        {
+            "name": "percentile",
+            "description": "Enter the percentile rank (All, 1, 2, 3, 4)",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "All", "value": "All"},
+                {"name": "Top 25%", "value": "1"},
+                {"name": "26% to 50%", "value": "2"},
+                {"name": "51% to 75%", "value": "3"},
+                {"name": "Bottom 25%", "value": "4"},
+            ],
+        },
+        {
+            "name": "name",
+            "description": "Enter the player's name",
+            "type": 3,  # STRING type
+            "required": True,
+        },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
+    ],
+)(stats_analysis)
 
 # RANK command
 @client.command(
