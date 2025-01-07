@@ -347,6 +347,38 @@ client = Client(token=TOKEN)
     ],
 )(stats_compare)
 
+# STATS REVIEW command
+@client.command(
+    name="stats-review",
+    description="Fetch list of submissions needing review.",
+    options=[
+        {
+            "name": "type",
+            "description": "Enter the type of stats (attack, defense, dragon)",
+            "type": OptionType.STRING,
+            "required": True,
+            "choices": [
+                {"name": "attack", "value": "attack"},
+                {"name": "defense", "value": "defense"},
+                {"name": "dragon", "value": "dragon"},
+            ],
+        },
+        {
+            "name": "filter_by",
+            "description": "Filter the stats by a specific criterion",
+            "type": OptionType.STRING,
+            "required": True,
+            "choices": [
+                {"name": "New", "value": "New"},
+                {"name": "Duplicates", "value": "Duplicates"},
+                {"name": "Last Week", "value": "Last Week"},
+                {"name": "Last Month", "value": "Last Month"},
+                {"name": "Over a month", "value": "Over a month"}
+            ]
+        }
+    ]
+)(stats_review)
+
 # STATS ANALYSIS command
 @client.command(
     name="stats-analysis",
