@@ -78,7 +78,7 @@ async def stats_analysis(ctx: CommandContext, type: str, tier: str, troop: str, 
             valid_players_info = [player for player in valid_players_info if player.get('Troop') == "Ranged"]
         elif troop == "Cav":
             valid_players_info = [player for player in valid_players_info if player.get('Troop') == "Cav"]
-        elif troop == "Inf":
+        elif troop == "inf":
             valid_players_info = [player for player in valid_players_info if player.get('Troop') not in ["Ranged", "Cav"]]
         
         # Debug statement to check the fetched data
