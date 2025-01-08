@@ -107,6 +107,11 @@ async def stats_power(ctx: CommandContext, type: str, name: str, clear_cache: bo
                 else:
                     formatted_value = f"{round(value):,}" if isinstance(value, (int, float)) and math.isfinite(value) else f"{value}"
                 formatted_info.append(f"{formatted_key}: {formatted_value}")
+
+                # Add mini dividers below specified headers
+                if formatted_key in ["Attack", "Att vs Cav", "Health", "Def vs Cav", "Marcher Attack SOP", "Defender Health"]:
+                    formatted_info.append("-----")
+
         await ctx.send("\n".join(formatted_info))
     else:
         await ctx.send(f"**Oops, this is embarrassing..**\n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
