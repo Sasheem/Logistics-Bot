@@ -35,7 +35,7 @@ STRING_HEADERS = [
 # Header to treat as a date
 DATE_HEADER = "Date"
 
-async def remove_player(ctx: CommandContext, name: str, option: str):
+async def remove_player(ctx: CommandContext, name: str, option: str, editor_note: str = None):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
 
     # Get the sheet ID for the selected option
@@ -107,13 +107,17 @@ async def remove_player(ctx: CommandContext, name: str, option: str):
     deleted_entry = [timestamp] + most_recent_entry
 
     # Add the note to the "Editor Notes" column
+    removal_message = f"{name} was removed"
+    if editor_note:
+        removal_message += f", {editor_note}"
+
     if len(deleted_entry) > editor_notes_index:
         if deleted_entry[editor_notes_index]:
-            deleted_entry[editor_notes_index] += f" | {name} was removed."
+            deleted_entry[editor_notes_index] += f" | {removal_message}"
         else:
-            deleted_entry[editor_notes_index] = f"{name} was removed."
+            deleted_entry[editor_notes_index] = removal_message
     else:
-        deleted_entry.append(f"{name} was removed.")
+        deleted_entry.append(removal_message)
 
     # Append the deleted entry to the "Deleted_Responses" tab
     append_data_to_deleted_responses(sheet_id, headers, deleted_entry)
@@ -121,9 +125,9 @@ async def remove_player(ctx: CommandContext, name: str, option: str):
     # Update the "Editor Notes" column in the "Form_Responses" tab for the most recent entry row
     editor_notes_cell = sheet.cell(most_recent_entry_row_idx + 1, editor_notes_index + 1)  # Adjust for 1-based index
     if editor_notes_cell.value:
-        editor_notes_cell.value += f" | {name} was removed."
+        editor_notes_cell.value += f" | {removal_message}"
     else:
-        editor_notes_cell.value = f"{name} was removed."
+        editor_notes_cell.value = removal_message
     sheet.update_cell(editor_notes_cell.row, editor_notes_cell.col, editor_notes_cell.value)
 
     await ctx.send(f"## Player Removal \nRemoved {len(matched_entries)} instance(s) of \"{name}\" from {option}. The most recent entry has been archived.")

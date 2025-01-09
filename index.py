@@ -806,6 +806,12 @@ client = Client(token=TOKEN)
                 {"name": "Dragon 33", "value": "Dragon 33"},
             ],
         },
+        {
+            "name": "editor_note",
+            "description": "Optional note to append to the removal message",
+            "type": 3,  # STRING type
+            "required": False,
+        },
     ],
 )(remove_player)
 
