@@ -110,13 +110,22 @@ async def remove_player(ctx: CommandContext, name: str, option: str, editor_note
     removal_message = f"{name} was removed"
     if editor_note:
         removal_message += f", {editor_note}"
+    
+    # Debug statement to check the removal message
+    print(f"Removal Message: {removal_message}")
 
     if len(deleted_entry) > editor_notes_index:
         if deleted_entry[editor_notes_index]:
+            # Debug statement to check the removal message
+            print(f"Deleted_entry has existing note: {removal_message}")
             deleted_entry[editor_notes_index] += f" | {removal_message}"
         else:
+            # Debug statement to check the removal message
+            print(f"Deleted_entry DOES NOT HAVE existing note: {removal_message}")
             deleted_entry[editor_notes_index] = removal_message
     else:
+        # Debug statement to check the removal message
+        print(f"Deleted_entry len < note index - DOES NOT HAVE existing note: {removal_message}")
         deleted_entry.append(removal_message)
 
     # Append the deleted entry to the "Deleted_Responses" tab
@@ -130,4 +139,4 @@ async def remove_player(ctx: CommandContext, name: str, option: str, editor_note
         editor_notes_cell.value = removal_message
     sheet.update_cell(editor_notes_cell.row, editor_notes_cell.col, editor_notes_cell.value)
 
-    await ctx.send(f"## Player Removal \nRemoved {len(matched_entries)} instance(s) of \"{name}\" from {option}. The most recent entry has been archived.")
+    await ctx.send(f"**Player Removed** \nDeleted {len(matched_entries)} instance(s) of \"{name}\" from {option} and archived the most recent entry.")
