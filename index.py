@@ -29,6 +29,7 @@ from commands.list_name_changes import list_name_changes
 from commands.list_old_stats import list_old_stats
 from commands.active_alts import active_alts
 from commands.remove_player import remove_player
+from commands.war_prep import war_prep
 
 load_dotenv()
 
@@ -814,6 +815,30 @@ client = Client(token=TOKEN)
         },
     ],
 )(remove_player)
+
+# WARPLANS command
+@client.command(
+    name="warprep",
+    description="List war plans for seat swaps or tier placement.",
+    options=[
+        {
+            "name": "type",
+            "description": "Select the type of war plan",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "Seat Swaps", "value": "seat_swaps"},
+                {"name": "Tier Placement", "value": "tier_placement"},
+            ],
+        },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
+    ],
+)(war_prep)
 
 # Event listener for when the bot is ready
 @client.event
