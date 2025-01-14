@@ -34,7 +34,7 @@ async def list_ranks_dragon(ctx: CommandContext, type: str, limit: int = None, c
         header = "{:<18} {:<10} {:<12}\n".format(
             "Player Name", "Score", "Rank"
         )
-        separator = "=" * 34 + "\n"
+        separator = "=" * 32 + "\n"
         formatted_info = header + separator
 
         for player in players_info:

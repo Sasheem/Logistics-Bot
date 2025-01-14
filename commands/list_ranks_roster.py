@@ -47,18 +47,18 @@ async def list_ranks_roster(ctx: CommandContext, team: str, category: str, defen
 
         if category in ["troops_attack", "dragon_attack", "dragon_defense"]:
             header = "{:<18} {:<8} {:<16}\n".format("Player", "Troop", "Score")
-            separator = "=" * 34 + "\n"
+            separator = "=" * 32 + "\n"
             formatted_info = header + separator
         elif category == "troops_defense":
             if defense_type == "base":
                 header = "{:<18} {:<8} {:<16}\n".format("Player", "Troop", "Base")
             elif defense_type == "glam":
                 header = "{:<18} {:<8} {:<16}\n".format("Player", "Troop", "Glam")
-            separator = "=" * 34 + "\n"
+            separator = "=" * 32 + "\n"
             formatted_info = header + separator
         elif category in ["rally_caps", "rein_caps"]:
             header = "{:<18} {:<8} {:<16}\n".format("Player", "Troop", "Cap")
-            separator = "=" * 34 + "\n"
+            separator = "=" * 32 + "\n"
             formatted_info = header + separator
 
         for entry in team_stats_list:

@@ -17,7 +17,7 @@ async def list_old_stats(ctx: CommandContext, months: int, tier: str = None):
         color = 0x8B4513  # Brown color
 
         header = "{:<18} {:<6} {:<6}\n".format("Name", "Tier", "Troop")
-        separator = "=" * 34 + "\n"
+        separator = "=" * 32 + "\n"
         formatted_info = header + separator
 
         cutoff_date = datetime.now() - timedelta(days=months * 30)
@@ -34,7 +34,7 @@ async def list_old_stats(ctx: CommandContext, months: int, tier: str = None):
                 troop = entry['Troop']
 
                 if name.lower() not in active_alts_names and troop not in ["RCA", "Alt"] and (tier is None or entry_tier == tier):
-                    entry_info = f"{date_str:<10} \n{name:<18} {entry_tier:<6} {troop:<6}\n" + "-" * 34 + "\n"
+                    entry_info = f"{date_str:<10} \n{name:<18} {entry_tier:<6} {troop:<6}\n" + "-" * 32 + "\n"
                     filtered_entries.append(entry_info)
 
         total_entries = len(filtered_entries)

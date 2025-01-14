@@ -58,7 +58,7 @@ async def list_ranks(ctx: CommandContext, type: str, category: str, limit: int =
         header = "{:<18} {:<10} {:<12}\n".format(
             "Player Name", "Score", "Rank"
         )
-        separator = "=" * 34 + "\n"
+        separator = "=" * 32 + "\n"
         formatted_info = header + separator
 
         for player in players_info:

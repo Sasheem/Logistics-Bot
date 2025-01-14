@@ -27,7 +27,7 @@ async def list_roster_notes(ctx: CommandContext):
         subject = note["Subject"]
         note_content = note["Note"]
         author = note["Author"]
-        entry = f"{date} | {subject}\n{note_content} - {author}\n" + "-" * 34 + "\n"
+        entry = f"{date} | {subject}\n{note_content} - {author}\n" + "-" * 32 + "\n"
         formatted_notes += entry
 
     # Create the Embed

@@ -15,7 +15,7 @@ async def list_name_changes(ctx: CommandContext, clear_cache: bool = False):
         color = 0x800080  # Purple color
 
         header = "{:<18} {:<18}\n".format("Old Name", "New Name")
-        separator = "=" * 34 + "\n"
+        separator = "=" * 32 + "\n"
         formatted_info = header + separator
 
         for entry in name_changes_list:
