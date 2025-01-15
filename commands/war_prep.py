@@ -25,8 +25,11 @@ async def war_prep(ctx: CommandContext, type: str, clear_cache: bool = False):
                 seat = row.get("Seat", "N/A")
                 current_holder = row.get("Current Holder", "N/A")
                 new_holder = row.get("New Holder", "N/A")
+                current_cap = row.get("Current Cap", "N/A")
+                new_cap = row.get("New Cap", "N/A")
                 status = row.get("Status", "N/A")
-                formatted_info += f"**{seat}** ({status})\n{current_holder} > {new_holder}\n" + "-" * 28 + "\n"
+                formatted_info += f"**{seat}** ({status})\n{current_holder} > {new_holder}\n"
+                formatted_info += f"{current_cap} > {new_cap}\n" + "-" * 28 + "\n"
         
         elif type == "tier_placement":
             current_team = ""
