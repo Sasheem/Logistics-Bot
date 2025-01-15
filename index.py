@@ -30,6 +30,7 @@ from commands.list_old_stats import list_old_stats
 from commands.active_alts import active_alts
 from commands.remove_player import remove_player
 from commands.war_prep import war_prep
+from commands.seat_swaps import seat_swaps
 
 load_dotenv()
 
@@ -839,6 +840,20 @@ client = Client(token=TOKEN)
         },
     ],
 )(war_prep)
+
+# SEATSWAPS command
+@client.command(
+    name="seatswaps",
+    description="List seat swaps and organize them into ordered and unordered seats.",
+    options=[
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
+    ],
+)(seat_swaps)
 
 # Event listener for when the bot is ready
 @client.event
