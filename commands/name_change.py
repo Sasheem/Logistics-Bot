@@ -17,7 +17,7 @@ SHEET_TABS = {
     "Attack 33": {"sheet_id": ATTACK_SHEET_ID_33, "tab_name": "Form_Responses", "column": 2},
     "Defense 33": {"sheet_id": DEFENSE_SHEET_ID_33, "tab_name": "Form_Responses", "column": 2},
     "Dragon 33": {"sheet_id": DRAGON_SHEET_ID_33, "tab_name": "Form_Responses", "column": 2},
-    "RCA": {"sheet_id": RCA_SHEET_ID, "tab_name": "RADS_RCA_Info", "column": 1},
+    "RCA": {"sheet_id": RCA_SHEET_ID, "tab_name": "RCA_Info", "column": 1},
 }
 
 async def name_change(ctx: CommandContext, old_name: str, new_name: str, option: str):
