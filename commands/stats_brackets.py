@@ -100,9 +100,6 @@ async def stats_brackets(ctx: CommandContext, sheet: str, type: str, bracket: st
     subtitle = f"\nStats - {sheet.capitalize()} \nType - {type.capitalize()} \nBracket - {bracket} \nTroop - {original_troop} \nTier - {original_tier}"
     formatted_info.append(subtitle)
 
-    # Debug statement to check subtitle values
-    print(f"Debug: Subtitle - {subtitle}")
-
     # Split the formatted_info into chunks if it exceeds the Discord limit
     chunks = []
     chunk = ""
