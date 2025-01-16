@@ -25,6 +25,7 @@ from commands.name_change import name_change
 from commands.stats_compare import stats_compare
 from commands.stats_review import stats_review
 from commands.stats_analysis import stats_analysis
+from commands.stats_brackets import stats_brackets
 from commands.list_name_changes import list_name_changes
 from commands.list_old_stats import list_old_stats
 from commands.active_alts import active_alts
@@ -449,6 +450,79 @@ client = Client(token=TOKEN)
         },
     ],
 )(stats_analysis)
+
+# STATS-BRACKETS command
+@client.command(
+    name="stats-brackets",
+    description="List the stats of players in different brackets.",
+    options=[
+        {
+            "name": "sheet",
+            "description": "Select the sheet (attack or defense)",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "attack", "value": "attack"},
+                {"name": "defense", "value": "defense"},
+            ],
+        },
+        {
+            "name": "type",
+            "description": "Select the type (Base or Glam)",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "Base", "value": "Base"},
+                {"name": "Glam", "value": "Glam"},
+            ],
+        },
+        {
+            "name": "bracket",
+            "description": "Select the bracket (All, 1, 2, 3, 4)",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "All", "value": "All"},
+                {"name": "Top 25%", "value": "1"},
+                {"name": "26% to 50%", "value": "2"},
+                {"name": "51% to 75%", "value": "3"},
+                {"name": "Bottom 25%", "value": "4"},
+            ],
+        },
+        {
+            "name": "troop",
+            "description": "Select the troop type (All, Inf, Ranged, Cav)",
+            "type": 3,  # STRING type
+            "required": False,
+            "choices": [
+                {"name": "All", "value": "All"},
+                {"name": "inf", "value": "inf"},
+                {"name": "Ranged", "value": "Ranged"},
+                {"name": "Cav", "value": "Cav"},
+            ],
+        },
+        {
+            "name": "tier",
+            "description": "Select the tier (All, T12, T11, T10, T09, T08)",
+            "type": 3,  # STRING type
+            "required": False,
+            "choices": [
+                {"name": "All", "value": "All"},
+                {"name": "T12", "value": "T12"},
+                {"name": "T11", "value": "T11"},
+                {"name": "T10", "value": "T10"},
+                {"name": "T09", "value": "T09"},
+                {"name": "T08", "value": "T08"},
+            ],
+        },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
+    ],
+)(stats_brackets)
 
 # RANK command
 @client.command(
