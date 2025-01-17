@@ -32,6 +32,7 @@ from commands.active_alts import active_alts
 from commands.remove_player import remove_player
 from commands.war_prep import war_prep
 from commands.seat_swaps import seat_swaps
+from commands.war_leads import warleads
 
 load_dotenv()
 
@@ -928,6 +929,30 @@ client = Client(token=TOKEN)
         },
     ],
 )(seat_swaps)
+
+# WARLEADS command
+@client.command(
+    name="warleads",
+    description="List war leads for PVP or KVK.",
+    options=[
+        {
+            "name": "type",
+            "description": "Select the type of war leads",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "PVP", "value": "PVP"},
+                {"name": "KVK", "value": "KVK"},
+            ],
+        },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
+    ],
+)(warleads)
 
 # Event listener for when the bot is ready
 @client.event
