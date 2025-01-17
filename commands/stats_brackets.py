@@ -1,10 +1,9 @@
-# commands/stats_brackets.py
-
 import numpy as np
 from interactions import CommandContext, Embed
 from config.google_sheets import client_gs
 from config.constants import WAR_SHEET_ID
 from utils.fetch_data_with_cache import fetch_data_with_cache
+from utils.calculate_averages import calculate_averages
 
 async def stats_brackets(ctx: CommandContext, sheet: str, type: str, bracket: str, troop: str = "All", tier: str = "All", clear_cache: bool = False):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
@@ -65,6 +64,20 @@ async def stats_brackets(ctx: CommandContext, sheet: str, type: str, bracket: st
     # Sort the list by the scoring value in descending order
     filtered_players_info.sort(key=lambda x: float(x.get(scoring_key, 0)), reverse=True)
     
+    # Calculate averages for specified headers
+    attack_headers = [
+        "Attack", "Att vs Inf", "Att vs Ranged", "Att vs Cav", "Marcher Attack SOP",
+        "Total Att vs Inf", "Total Att vs Ranged", "Total Att vs Cav"
+    ]
+    defense_headers = [
+        "Defense", "Health", "Def vs Inf", "Def vs Ranged", "Def vs Cav", "Defense vs Player at SoP",
+        "Health vs Player at SoP", "Defender Defense", "Defender Health", "Total Def vs Inf", "Total Def vs Ranged",
+        "Total Def vs Cav", "Total Health"
+    ]
+    suffixes = ["Base", "Glam"]
+    headers = attack_headers if sheet == "attack" else defense_headers
+    averages = calculate_averages(filtered_players_info, headers, suffixes)
+    
     # Format the output
     formatted_info = []
     for player in filtered_players_info:
@@ -79,7 +92,7 @@ async def stats_brackets(ctx: CommandContext, sheet: str, type: str, bracket: st
             att_vs_inf = player.get(f'Att vs Inf {type_key}', 'N/A')
             att_vs_ranged = player.get(f'Att vs Ranged {type_key}', 'N/A')
             att_vs_cav = player.get(f'Att vs Cav {type_key}', 'N/A')
-            formatted_info.append(f"{date}\n{name} | {troop} | {tier}\n{attack} | {marcher_attack}\n{att_vs_inf} | {att_vs_ranged} | {att_vs_cav}\n{'-' * 28}")
+            formatted_info.append(f"{date}\n{name} | {troop} | {tier}\n{attack:,} | {marcher_attack:,}\n{att_vs_inf:,} | {att_vs_ranged:,} | {att_vs_cav:,}\n{'-' * 28}")
         else:
             defense = player.get(f'Defense {type_key}', 'N/A')
             defense_vs_sop = player.get(f'Defense vs Player at SoP {type_key}', 'N/A')
@@ -90,15 +103,20 @@ async def stats_brackets(ctx: CommandContext, sheet: str, type: str, bracket: st
             health_vs_sop = player.get(f'Health vs Player at SoP {type_key}', 'N/A')
             defender_defense = player.get(f'Defender Defense {type_key}', 'N/A')
             defender_health = player.get(f'Defender Health {type_key}', 'N/A')
-            formatted_info.append(f"{date}\n{name} | {troop} | {tier}\n{defense} | {defense_vs_sop}\n{def_vs_inf} | {def_vs_ranged} | {def_vs_cav}\n{health} | {health_vs_sop}\n{defender_defense} | {defender_health}\n{'-' * 28}")
+            formatted_info.append(f"{date}\n{name} | {troop} | {tier}\n{defense:,} | {defense_vs_sop:,}\n{def_vs_inf:,} | {def_vs_ranged:,} | {def_vs_cav:,}\n{health:,} | {health_vs_sop:,}\n{defender_defense:,} | {defender_health:,}\n{'-' * 28}")
     
     # Add the total number of players at the bottom
     total_players = len(filtered_players_info)
-    formatted_info.append(f"**Total Players:** {total_players}")
+    formatted_info.append(f"**Total Players:** {total_players:,}")
 
     # Add subtitle with options selected
     subtitle = f"\nStats - {sheet.capitalize()} \nType - {type.capitalize()} \nBracket - {bracket} \nTroop - {original_troop} \nTier - {original_tier}"
     formatted_info.append(subtitle)
+
+    # Add averages to the output
+    selected_suffix = type.capitalize()
+    averages_info = "\n".join([f"{header}: {avg[selected_suffix]:,}" for header, avg in averages.items()])
+    formatted_info.append(f"\n**Averages ({selected_suffix}):**\n{averages_info}")
 
     # Split the formatted_info into chunks if it exceeds the Discord limit
     chunks = []
