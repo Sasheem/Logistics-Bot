@@ -36,7 +36,7 @@ async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str, 
 
     # Soft match if no exact match found for player 1
     if not player_info1:
-        soft_matches = process.extract(normalized_name1, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type, use_cache=not clear_cache)], scorer=fuzz.ratio)
+        soft_matches = process.extract(normalized_name1, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type, use_cache=not clear_cache)], scorer=fuzz.token_sort_ratio)
 
         best_match = soft_matches[0] if soft_matches else None
         if best_match and best_match[1] > 80:
@@ -45,7 +45,7 @@ async def stats_compare(ctx: CommandContext, type: str, name1: str, name2: str, 
 
     # Soft match if no exact match found for player 2
     if not player_info2:
-        soft_matches = process.extract(normalized_name2, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type, use_cache=not clear_cache)], scorer=fuzz.partial_ratio)
+        soft_matches = process.extract(normalized_name2, [normalize_string(entry['Player Name']) for entry in fetch_data_with_cache(client_gs, WAR_SHEET_ID, stats_type, use_cache=not clear_cache)], scorer=fuzz.token_sort_ratio)
 
         best_match = soft_matches[0] if soft_matches else None
         if best_match and best_match[1] > 80:
