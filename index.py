@@ -168,11 +168,24 @@ client = Client(token=TOKEN)
 )(roster_alts)
 
 # ROSTER NOTES command
-# Command registration for list_roster_notes
-
 @client.command(
     name="rosternotes",
-    description="List the roster notes for the current week"
+    description="List the roster notes",
+    options=[
+        {
+            "name": "filter",
+            "description": "Select the filter for the notes",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "Current", "value": "current"},
+                {"name": "Last week", "value": "last_week"},
+                {"name": "Last 2 weeks", "value": "last_2_weeks"},
+                {"name": "Last month", "value": "last_month"},
+                {"name": "All", "value": "all"}
+            ]
+        }
+    ]
 )(list_roster_notes)
 
 # ROSTERNOTES MANAGE command
