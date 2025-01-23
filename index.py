@@ -92,7 +92,7 @@ client = Client(token=TOKEN)
 
 # ROSTER POSITION command
 @client.command(
-    name="rosterposition",
+    name="roster-position",
     description="Get the roster position for a player.",
     options=[
         {
@@ -715,9 +715,9 @@ client = Client(token=TOKEN)
     ],
 )(keep_logistics)
 
-# RCA command
+# RCA-INFO command
 @client.command(
-    name="rca",
+    name="rca-info",
     description="Fetch the RCA info for a specific name.",
     options=[
         {
@@ -737,7 +737,7 @@ client = Client(token=TOKEN)
 
 # LIST RCA-LOGS command
 @client.command(
-    name="rca-logs",
+    name="list-rca-logs",
     description="Fetch the list of RCA logs.",
     options=[
         {
