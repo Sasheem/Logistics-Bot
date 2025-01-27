@@ -14,18 +14,12 @@ async def seat_swaps(ctx: CommandContext, clear_cache: bool = False):
     warplan_info = fetch_data_with_cache(client_gs, WAR_DOCS_SHEET_ID, warplan_type, use_cache=not clear_cache)
     
     if warplan_info:
-        unordered_seats = []
         ordered_seats = []
         special_values = ["KL Raffle", "DROP", "ANY RCA", "Fairy Alt", "X"]
 
-        # Separate into unordered and ordered seats
+        # Collect all rows into ordered_seats
         for row in warplan_info:
-            current_holder = row.get("Current Holder", "N/A")
-            new_holder = row.get("New Holder", "N/A")
-            if any(value in [current_holder, new_holder] for value in special_values):
-                unordered_seats.append(row)
-            else:
-                ordered_seats.append(row)
+            ordered_seats.append(row)
 
         # Re-order the ordered_seats list
         def find_ordered_seats(ordered_seats):
@@ -54,13 +48,32 @@ async def seat_swaps(ctx: CommandContext, clear_cache: bool = False):
                         queue.append(neighbor)
 
             ordered_seats_sorted = []
+            visited_indices = []
             for node in sorted_order:
-                for row in ordered_seats:
-                    if row["Current Holder"] == node:
+                for idx, row in enumerate(ordered_seats):
+                    if row["Current Holder"] == node and idx not in visited_indices:
                         ordered_seats_sorted.append(row)
+                        visited_indices.append(idx)
+                        # Ensure the row with the player's name in the new holder appears directly after
+                        for dep_idx, dependent_row in enumerate(ordered_seats):
+                            if dependent_row["Current Holder"] == row["New Holder"] and dep_idx not in visited_indices:
+                                ordered_seats_sorted.append(dependent_row)
+                                visited_indices.append(dep_idx)
             return ordered_seats_sorted
 
         ordered_seats = find_ordered_seats(ordered_seats)[::-1]  # Reverse the order
+
+        # Ensure the correct order for the specific case
+        def ensure_correct_order(ordered_seats):
+            for i in range(len(ordered_seats) - 1):
+                current_holder = ordered_seats[i]["Current Holder"]
+                for j in range(i + 1, len(ordered_seats)):
+                    if ordered_seats[j]["New Holder"] == current_holder:
+                        ordered_seats.insert(i + 1, ordered_seats.pop(j))
+                        break
+            return ordered_seats
+
+        ordered_seats = ensure_correct_order(ordered_seats)
 
         # Send the title for Ordered Seats
         await ctx.channel.send("# Ordered Seats")
@@ -73,20 +86,6 @@ async def seat_swaps(ctx: CommandContext, clear_cache: bool = False):
             new_holder = row.get("New Holder", "N/A")
             status = row.get("Status", "N/A")
             message = f"{index}. **{seat} ({status})**\n{current_holder} > {new_holder}"
-            await ctx.channel.send(message)
-            await asyncio.sleep(1)  # Add a delay to avoid rate limiting
-
-        # Send the title for Unordered Seats
-        await ctx.channel.send("# Unordered Seats")
-        await asyncio.sleep(1)  # Add a delay to avoid rate limiting
-
-        # Send each unordered seat as an individual message
-        for row in unordered_seats:
-            seat = row.get("Seat", "N/A")
-            current_holder = row.get("Current Holder", "N/A")
-            new_holder = row.get("New Holder", "N/A")
-            status = row.get("Status", "N/A")
-            message = f"**{seat} ({status})**\n{current_holder} > {new_holder}"
             await ctx.channel.send(message)
             await asyncio.sleep(1)  # Add a delay to avoid rate limiting
 
