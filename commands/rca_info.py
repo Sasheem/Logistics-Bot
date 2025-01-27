@@ -37,4 +37,4 @@ async def rca_info(ctx: CommandContext, name: str, clear_cache: bool = False):
             message = f"## {title}\n{subtitle}\n{'--' * 10}\n{details}"
             await ctx.send(message)
     else:
-        await ctx.send(f"## Oops, this is embarrassing..\n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
+        await ctx.send(f"**Oops, this is embarrassing..**\n\nNo entries found for: **{name}**.\nPlease check the spelling and try again.")
