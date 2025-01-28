@@ -23,7 +23,7 @@ async def seat_swaps(ctx: CommandContext, clear_cache: bool = False):
 
     # Detect cycles before proceeding
     if detect_cycles(graph):
-        await ctx.channel.send("⚠️ Cycle detected in seat swaps. Please check the sheet for circular dependencies.")
+        await ctx.channel.send("⚠️ Circular Dependency detected. \nPlease check all holders in the sheet for duplicate names.")
         return
 
     # Perform topological sort and reorder rows
