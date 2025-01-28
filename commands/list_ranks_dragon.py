@@ -6,7 +6,7 @@ from config.constants import WAR_SHEET_ID
 from utils.fetch_data_with_cache import fetch_data_with_cache
 from utils.last_updated import last_updated
 
-async def list_ranks_dragon(ctx: CommandContext, type: str, limit: int = None, clear_cache: bool = False):
+async def list_ranks_dragon(ctx: CommandContext, type: str, limit: str, clear_cache: bool = False):
     await ctx.defer()  # Acknowledge the interaction to avoid "Unknown Interaction" error
     rank_types = {
         "dragon-attack": "dragon_attack_rank",
@@ -15,10 +15,11 @@ async def list_ranks_dragon(ctx: CommandContext, type: str, limit: int = None, c
     rank_type = rank_types.get(type)
     players_info = fetch_data_with_cache(client_gs, WAR_SHEET_ID, rank_type, use_cache=not clear_cache)
     if players_info:
-        if limit:
+        if limit != "all":
+            limit = int(limit)
             players_info = players_info[:limit]
         title = f"{type.replace('-', ' ').title()} Ranks"
-        subtitle = f"**Showing top {limit} players**" if limit else ""
+        subtitle = f"**Showing top {limit} players**" if limit != "all" else ""
 
         # Determine the emoji and color based on the type
         if type == "dragon-attack":

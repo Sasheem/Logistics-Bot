@@ -602,9 +602,18 @@ client = Client(token=TOKEN)
         },
         {
             "name": "limit",
-            "description": "Enter the number of players to display (default is all)",
-            "type": 4,  # INTEGER type
-            "required": False,
+            "description": "Select the number of players to display",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "10", "value": "10"},
+                {"name": "20", "value": "20"},
+                {"name": "30", "value": "30"},
+                {"name": "50", "value": "50"},
+                {"name": "75", "value": "75"},
+                {"name": "100", "value": "100"},
+                {"name": "All", "value": "all"},
+            ],
         },
         {
             "name": "clear_cache",
@@ -632,9 +641,18 @@ client = Client(token=TOKEN)
         },
         {
             "name": "limit",
-            "description": "Enter the number of players to display (default is all)",
-            "type": 4,  # INTEGER type
-            "required": False,
+            "description": "Select the number of players to display",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "10", "value": "10"},
+                {"name": "20", "value": "20"},
+                {"name": "30", "value": "30"},
+                {"name": "50", "value": "50"},
+                {"name": "75", "value": "75"},
+                {"name": "100", "value": "100"},
+                {"name": "All", "value": "all"},
+            ],
         },
         {
             "name": "clear_cache",
