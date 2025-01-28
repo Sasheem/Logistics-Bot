@@ -17,6 +17,7 @@ from commands.stats_history import stats_history
 from commands.rank import rank
 from commands.list_ranks import list_ranks
 from commands.list_ranks_dragon import list_ranks_dragon
+from commands.list_ranks_rcas import list_ranks_rcas
 from commands.list_ranks_roster import list_ranks_roster
 from commands.keep_logistics import keep_logistics
 from commands.rca_info import rca_info
@@ -662,6 +663,31 @@ client = Client(token=TOKEN)
         },
     ],
 )(list_ranks_dragon)
+
+# RANKS RCAS command
+@client.command(
+    name="ranks-rcas",
+    description="List all players' RCA ranks and Rein Cap.",
+    options=[
+        {
+            "name": "limit",
+            "description": "Select the number of players to display",
+            "type": 3,  # STRING type
+            "required": True,
+            "choices": [
+                {"name": "All", "value": "all"},
+                {"name": "10", "value": "10"},
+                {"name": "30", "value": "30"},
+            ],
+        },
+        {
+            "name": "clear_cache",
+            "description": "Clear cache and fetch fresh data",
+            "type": 5,  # BOOLEAN type
+            "required": False,
+        },
+    ],
+)(list_ranks_rcas)
 
 # RANKS ROSTER command
 @client.command(
