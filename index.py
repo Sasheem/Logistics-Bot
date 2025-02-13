@@ -46,7 +46,7 @@ client = Client(token=TOKEN)
 
 # TEAM-OVERVIEW command
 @client.command(
-    name="team-overview",
+    name="team-numbers",
     description="Breakdown of troop tier/types for team and rosters.",
     options=[
         {
@@ -647,7 +647,7 @@ client = Client(token=TOKEN)
 
 # LIST RCA-LOGS command
 @client.command(
-    name="list-rca-logs",
+    name="rca-logs-list",
     description="Fetch the list of RCA logs.",
     options=[
         {
