@@ -5,9 +5,6 @@ from dotenv import load_dotenv
 
 # Load the commands
 from commands.team_overview import team_overview
-from commands.roster_position import roster_position
-from commands.roster_t4s import roster_t4s
-from commands.roster_alts import roster_alts
 from commands.list_roster_notes import list_roster_notes
 from commands.roster_notes_add import roster_notes_add
 from commands.roster_notes_remove import roster_notes_remove
@@ -18,7 +15,6 @@ from commands.rank import rank
 from commands.list_ranks import list_ranks
 from commands.list_ranks_dragon import list_ranks_dragon
 from commands.list_ranks_rcas import list_ranks_rcas
-from commands.list_ranks_roster import list_ranks_roster
 from commands.keep_logistics import keep_logistics
 from commands.rca_info import rca_info
 from commands.list_rca_logs import list_rca_logs
@@ -29,10 +25,7 @@ from commands.stats_analysis import stats_analysis
 from commands.stats_brackets import stats_brackets
 from commands.list_name_changes import list_name_changes
 from commands.list_old_stats import list_old_stats
-from commands.active_alts import active_alts
 from commands.remove_player import remove_player
-from commands.war_prep import war_prep
-from commands.seat_swaps import seat_swaps
 
 load_dotenv()
 
@@ -89,83 +82,6 @@ client = Client(token=TOKEN)
         },
     ],
 )(team_overview)
-
-# ROSTER POSITION command
-@client.command(
-    name="roster-position",
-    description="Get the roster position for a player.",
-    options=[
-        {
-            "name": "name",
-            "description": "Enter player name exactly as it appears in the roster",
-            "type": 3,  # STRING type
-            "required": True,
-        },
-        {
-            "name": "clear_cache",
-            "description": "Clear cache and fetch fresh data",
-            "type": 5,  # BOOLEAN type
-            "required": False,
-        },
-    ],
-)(roster_position)
-
-# ROSTER-T4S command
-@client.command(
-    name="roster-t4s",
-    description="Fetch the T4s for a specific T3 player.",
-    options=[
-        {
-            "name": "name",
-            "description": "The T3 player name to search for",
-            "type": 3,  # STRING type
-            "required": True,
-        },
-        {
-            "name": "clear_cache",
-            "description": "Clear cache and fetch fresh data",
-            "type": 5,  # BOOLEAN type
-            "required": False,
-        },
-    ],
-)(roster_t4s)
-
-# ROSTER-ALTS command
-@client.command(
-    name="roster-alts",
-    description="List roster alts for a specific team and type.",
-    options=[
-        {
-            "name": "team",
-            "description": "Select the team",
-            "type": 3,  # STRING type
-            "required": True,
-            "choices": [
-                {"name": "WHSKY", "value": "WHSKY"},
-                {"name": "TANGO", "value": "TANGO"},
-                {"name": "FXTRT", "value": "FXTRT"},
-            ],
-        },
-        {
-            "name": "type",
-            "description": "Select the type",
-            "type": 3,  # STRING type
-            "required": True,
-            "choices": [
-                {"name": "All", "value": "All"},
-                {"name": "RCA", "value": "RCA"},
-                {"name": "Alt", "value": "Alt"},
-                {"name": "X", "value": "X"},
-            ],
-        },
-        {
-            "name": "clear_cache",
-            "description": "Clear cache and fetch fresh data",
-            "type": 5,  # BOOLEAN type
-            "required": False,
-        },
-    ],
-)(roster_alts)
 
 # ROSTER NOTES command
 @client.command(
@@ -689,55 +605,6 @@ client = Client(token=TOKEN)
     ],
 )(list_ranks_rcas)
 
-# RANKS ROSTER command
-@client.command(
-    name="ranks-roster",
-    description="Fetch ranks for WHSKY, TANGO, or FXTRT by category.",
-    options=[
-        {
-            "name": "team",
-            "description": "Select the team",
-            "type": 3,  # STRING type
-            "required": True,
-            "choices": [
-                {"name": "WHSKY", "value": "whsky"},
-                {"name": "TANGO", "value": "tango"},
-                {"name": "FXTRT", "value": "fxtrt"},
-            ],
-        },
-        {
-            "name": "category",
-            "description": "Select the category",
-            "type": 3,  # STRING type
-            "required": True,
-            "choices": [
-                {"name": "Troops Attack", "value": "troops_attack"},
-                {"name": "Troops Defense", "value": "troops_defense"},
-                {"name": "Rally Caps", "value": "rally_caps"},
-                {"name": "Rein Caps", "value": "rein_caps"},
-                {"name": "Dragon Attack", "value": "dragon_attack"},
-                {"name": "Dragon Defense", "value": "dragon_defense"},
-            ],
-        },
-        {
-            "name": "defense_type",
-            "description": "Select the defense type (only for Troops Defense)",
-            "type": 3,  # STRING type
-            "required": False,
-            "choices": [
-                {"name": "Base", "value": "base"},
-                {"name": "Glam", "value": "glam"},
-            ],
-        },
-        {
-            "name": "clear_cache",
-            "description": "Clear cache and fetch fresh data",
-            "type": 5,  # BOOLEAN type
-            "required": False,
-        },
-    ],
-)(list_ranks_roster)
-
 # KEEP-LOGISTICS command
 @client.command(
     name="keep-logistics",
@@ -889,30 +756,6 @@ client = Client(token=TOKEN)
     ],
 )(list_old_stats)
 
-# ACTIVE ALTS command
-@client.command(
-    name="active-alts",
-    description="Add or remove a name from the active alts list and display the updated list.",
-    options=[
-        {
-            "name": "name",
-            "description": "Name of the alt to add or remove (accepts spaces).",
-            "type": 3,  # STRING type
-            "required": True,
-        },
-        {
-            "name": "action",
-            "description": "Action to perform (Add or Remove).",
-            "type": 3,  # STRING type
-            "required": True,
-            "choices": [
-                {"name": "Add", "value": "Add"},
-                {"name": "Remove", "value": "Remove"}
-            ],
-        }
-    ]
-)(active_alts)
-
 # REMOVE PLAYER command
 @client.command(
     name="remove-player",
@@ -947,44 +790,6 @@ client = Client(token=TOKEN)
         },
     ],
 )(remove_player)
-
-# WARPLANS command
-@client.command(
-    name="warprep",
-    description="List war plans for seat swaps or tier placement.",
-    options=[
-        {
-            "name": "type",
-            "description": "Select the type of war plan",
-            "type": 3,  # STRING type
-            "required": True,
-            "choices": [
-                {"name": "Seat Swaps", "value": "seat_swaps"},
-                {"name": "Tier Placement", "value": "tier_placement"},
-            ],
-        },
-        {
-            "name": "clear_cache",
-            "description": "Clear cache and fetch fresh data",
-            "type": 5,  # BOOLEAN type
-            "required": False,
-        },
-    ],
-)(war_prep)
-
-# SEATSWAPS command
-@client.command(
-    name="seatswaps",
-    description="List seat swaps and organize them into ordered and unordered seats.",
-    options=[
-        {
-            "name": "clear_cache",
-            "description": "Clear cache and fetch fresh data",
-            "type": 5,  # BOOLEAN type
-            "required": False,
-        },
-    ],
-)(seat_swaps)
 
 # Event listener for when the bot is ready
 @client.event
