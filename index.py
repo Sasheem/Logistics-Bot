@@ -26,7 +26,7 @@ client = Client(token=TOKEN)
 
 # ROSTER POSITION command
 @client.command(
-    name="roster-position",
+    name="roster_position",
     description="Get the roster position for a player.",
     options=[
         {
@@ -46,7 +46,7 @@ client = Client(token=TOKEN)
 
 # ROSTER-T4S command
 @client.command(
-    name="roster-bannermen",
+    name="roster_bannermen",
     description="Fetch the banners for a specific player.",
     options=[
         {
