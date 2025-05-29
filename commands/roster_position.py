@@ -1,18 +1,23 @@
 from interactions import CommandContext
 from rapidfuzz import process, fuzz
 from config.google_sheets import client_gs
-# from config.constants import WAR_SHEET_ID
-from config.constants import TEST_SHEET_ID
 from config.constants import FRICE_ORG_SHEET_ID
 from utils.fetch_roster_info import fetch_roster_info
 from utils.fetch_data_with_cache import fetch_data_with_cache
 from utils.string_utils import normalize_string
+from utils.handle_clear_cache import handle_clear_cache
 
 async def roster_position(ctx: CommandContext, name: str, clear_cache: bool = False):
     await ctx.defer()  # Defer the interaction to give more time
     spreadsheet_id = FRICE_ORG_SHEET_ID
     sheet_names = ['FIRE', 'ICE']
-    
+
+    # check permissions before clearing cache
+    if clear_cache:
+        success = await handle_clear_cache(ctx)
+
+        if not success:
+            return
 
     # Normalize the input name
     normalized_name = normalize_string(name)
@@ -48,6 +53,6 @@ async def roster_position(ctx: CommandContext, name: str, clear_cache: bool = Fa
             await ctx.send(response)
         except Exception as e:
             print(f"Error sending response: {e}")
-            await ctx.send(f"An error occurred while sending the response for {name}. Please try again.")
+            await ctx.send(f"An error occurred while sending the response for {name}. Please try again later.")
     else:
-        await ctx.send(f"**Oops..**\n\nPlayer not found: **{name}**.\nPlease check the spelling and try again.")
+        await ctx.send(f"> Player not found: **{name}**.\n\nPlease check the spelling and try again.")

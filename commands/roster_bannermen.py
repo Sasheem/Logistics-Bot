@@ -1,15 +1,22 @@
 from interactions import CommandContext
 from rapidfuzz import process, fuzz
 from config.google_sheets import client_gs
-from config.constants import TEST_SHEET_ID
 from config.constants import FRICE_ORG_SHEET_ID
 from utils.fetch_data_with_cache import fetch_data_with_cache
 from utils.string_utils import normalize_string
+from utils.handle_clear_cache import handle_clear_cache
 
 async def roster_bannermen(ctx: CommandContext, name: str, clear_cache: bool = False):
     await ctx.defer()  # Defer the interaction to give more time
     spreadsheet_id = FRICE_ORG_SHEET_ID
     sheet_names = ['FIRE', 'ICE']
+
+    # check permissions before clearing cache
+    if clear_cache:
+        success = await handle_clear_cache(ctx)
+
+        if not success:
+            return
 
     # Normalize the input name
     normalized_name = normalize_string(name)
@@ -55,4 +62,5 @@ async def roster_bannermen(ctx: CommandContext, name: str, clear_cache: bool = F
         response = f"**{position_type} for {name}:**\n" + "\n".join(related_positions)
         await ctx.send(response)
     else:
-        await ctx.send(f"**Oops..**\n\nPlayer not found or is not a valid position (T1, T2, or T3): **{name}**.\nPlease check the spelling and try again.")
+        await ctx.send(f"> No bannermen found for: **{name}**. \n\nPlayer not found or is not a valid position (T1, T2, or T3)\nPlease check the spelling and try again.")
+        # await ctx.send(f"**Oops..**\n\nPlayer not found or is not a valid position (T1, T2, or T3): **{name}**.\nPlease check the spelling and try again.")

@@ -1,5 +1,4 @@
-import discord
-from interactions import Client, OptionType
+from interactions import Client
 import os 
 from dotenv import load_dotenv
 
@@ -19,9 +18,6 @@ else:
     TOKEN = os.getenv('DISCORD_TOKEN_LIVE')
 
 # Discord bot setup
-intents = discord.Intents.default()
-intents.message_content = True
-intents.messages = True
 client = Client(token=TOKEN)
 
 # ROSTER POSITION command
@@ -44,7 +40,7 @@ client = Client(token=TOKEN)
     ],
 )(roster_position)
 
-# ROSTER-T4S command
+# ROSTER-BANNERMEN command
 @client.command(
     name="roster-bannermen",
     description="Fetch the banners for a specific player.",
