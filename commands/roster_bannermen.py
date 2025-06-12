@@ -5,17 +5,17 @@ from config.constants import FRICE_ORG_SHEET_ID
 from utils.fetch_data_with_cache import fetch_data_with_cache
 from utils.string_utils import normalize_string
 from utils.handle_clear_cache import handle_clear_cache
+from utils.clear_all_cache import clear_all_cache
 
 async def roster_bannermen(ctx: CommandContext, name: str, clear_cache: bool = False):
     await ctx.defer()  # Defer the interaction to give more time
     spreadsheet_id = FRICE_ORG_SHEET_ID
-    sheet_names = ['FIRE', 'ICE']
+    sheet_names = ['FIRE', 'ICE', 'STEAM']
 
-    # check permissions before clearing cache
     if clear_cache:
-        success = await handle_clear_cache(ctx)
-
-        if not success:
+        success = await handle_clear_cache(ctx)  # Call the helper function
+        clear_all_cache()
+        if not success:  # If clear cache failed, return early
             return
 
     # Normalize the input name
@@ -26,7 +26,7 @@ async def roster_bannermen(ctx: CommandContext, name: str, clear_cache: bool = F
     related_positions = []
 
     for sheet_name in sheet_names:
-        data = fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name, use_cache=not clear_cache)
+        data = fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name)
         normalized_data = [normalize_string(entry[f'Name {sheet_name}']) for entry in data]
         soft_matches = process.extract(normalized_name, normalized_data, scorer=fuzz.ratio)
         best_match = soft_matches[0] if soft_matches else None
@@ -63,4 +63,3 @@ async def roster_bannermen(ctx: CommandContext, name: str, clear_cache: bool = F
         await ctx.send(response)
     else:
         await ctx.send(f"> No bannermen found for: **{name}**. \n\nPlayer not found or is not a valid position (T1, T2, or T3)\nPlease check the spelling and try again.")
-        # await ctx.send(f"**Oops..**\n\nPlayer not found or is not a valid position (T1, T2, or T3): **{name}**.\nPlease check the spelling and try again.")

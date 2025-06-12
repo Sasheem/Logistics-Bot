@@ -8,35 +8,36 @@ from utils.string_utils import normalize_string
 from utils.handle_clear_cache import handle_clear_cache
 
 async def roster_position(ctx: CommandContext, name: str, clear_cache: bool = False):
-    await ctx.defer()  # Defer the interaction to give more time
+    await ctx.defer()  # Defer interaction to allow time for processing
     spreadsheet_id = FRICE_ORG_SHEET_ID
-    sheet_names = ['FIRE', 'ICE']
+    sheet_names = ['FIRE', 'ICE', 'STEAM']
 
-    # check permissions before clearing cache
+    # Check permissions before clearing cache
     if clear_cache:
         success = await handle_clear_cache(ctx)
-
         if not success:
             return
 
     # Normalize the input name
     normalized_name = normalize_string(name)
 
-    # Fetch data with or without cache based on clear_cache parameter
+    # Fetch roster info (cache clearing already handled within fetch_roster_info)
     roster_info = fetch_roster_info(client_gs, spreadsheet_id, normalized_name, use_cache=not clear_cache)
-
+    
     # Soft match if no exact match found
     if not roster_info or not roster_info["T1"]:
         for sheet_name in sheet_names:
-            data = fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name, use_cache=not clear_cache)
+            data = fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name)  # No use_cache flag needed
             normalized_data = [normalize_string(entry[f'Name {sheet_name}']) for entry in data]
             soft_matches = process.extract(normalized_name, normalized_data, scorer=fuzz.ratio)
             best_match = soft_matches[0] if soft_matches else None
+
             if best_match and best_match[1] > 80:
                 original_name = next(entry[f'Name {sheet_name}'] for entry in data if normalize_string(entry[f'Name {sheet_name}']) == best_match[0])
                 roster_info = fetch_roster_info(client_gs, spreadsheet_id, original_name, use_cache=not clear_cache)
                 break
 
+    # Format response
     if roster_info and roster_info["T1"]:
         response = f"**Roster Position for {name}:**\n"
         if roster_info["Team"]:
@@ -49,7 +50,10 @@ async def roster_position(ctx: CommandContext, name: str, clear_cache: bool = Fa
             response += f"T3: {roster_info['T3']}\n"
         if roster_info["T4"]:
             response += f"T4: {roster_info['T4']}\n"
+        
         try:
+            if clear_cache:  # Use clear_cache flag instead of success
+                response += f"\n> Roster cache cleared"
             await ctx.send(response)
         except Exception as e:
             print(f"Error sending response: {e}")
