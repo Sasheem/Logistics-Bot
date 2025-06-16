@@ -3,9 +3,9 @@ from rapidfuzz import process, fuzz
 from config.google_sheets import client_gs
 from config.constants import FRICE_ORG_SHEET_ID
 from utils.fetch_roster_info import fetch_roster_info
-from utils.fetch_data_with_cache import fetch_data_with_cache
+from utils.fetch_data_from_sheet import fetch_data_from_sheet
 from utils.string_utils import normalize_string
-from utils.handle_clear_cache import handle_clear_cache
+from utils.check_permissions import check_permissions
 
 async def roster_position(ctx: CommandContext, name: str, clear_cache: bool = False):
     await ctx.defer()  # Defer interaction to allow time for processing
@@ -14,8 +14,9 @@ async def roster_position(ctx: CommandContext, name: str, clear_cache: bool = Fa
 
     # Check permissions before clearing cache
     if clear_cache:
-        success = await handle_clear_cache(ctx)
+        success = await check_permissions(ctx)
         if not success:
+            print(f"User {ctx.author} attempted to clear cache without permission.")
             return
 
     # Normalize the input name
@@ -27,7 +28,7 @@ async def roster_position(ctx: CommandContext, name: str, clear_cache: bool = Fa
     # Soft match if no exact match found
     if not roster_info or not roster_info["T1"]:
         for sheet_name in sheet_names:
-            data = fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name)  # No use_cache flag needed
+            data = fetch_data_from_sheet(client_gs, spreadsheet_id, sheet_name)  # No use_cache flag needed
             normalized_data = [normalize_string(entry[f'Name {sheet_name}']) for entry in data]
             soft_matches = process.extract(normalized_name, normalized_data, scorer=fuzz.ratio)
             best_match = soft_matches[0] if soft_matches else None

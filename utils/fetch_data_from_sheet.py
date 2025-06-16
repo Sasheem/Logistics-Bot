@@ -1,8 +1,8 @@
-# utils/fetch_data_with_cache.py
+# utils/fetch_data_from_sheet.py
 import time
 from globals.cache_config import cache, CACHE_DURATION
 
-def fetch_data_with_cache(client_gs, spreadsheet_id, sheet_name):
+def fetch_data_from_sheet(client_gs, spreadsheet_id, sheet_name):
     current_time = time.time()
     # Only refresh data if not stored or expired
     if sheet_name not in cache["data"] or (current_time - cache["timestamp"]) > CACHE_DURATION:
