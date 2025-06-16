@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 # Load the commands
 from commands.roster_position import roster_position
 from commands.roster_bannermen import roster_bannermen
+from commands.clear_roster_cache import clear_roster_cache
 
 load_dotenv()
 
@@ -16,6 +17,10 @@ if environment == 'test':
     TOKEN = os.getenv('DISCORD_TOKEN_TEST')
 else:
     TOKEN = os.getenv('DISCORD_TOKEN_LIVE')
+
+# Token safety fallback
+if not TOKEN:
+    raise RuntimeError("No Discord token found for the selected environment.")
 
 # Discord bot setup
 client = Client(token=TOKEN)
@@ -60,9 +65,16 @@ client = Client(token=TOKEN)
     ],
 )(roster_bannermen)
 
+# CLEAR-ROSTER-CACHE command
+@client.command(
+    name="clear-roster-cache",
+    description="Clear cached roster for bot.",
+)(clear_roster_cache)
+
 # Event listener for when the bot is ready
 @client.event
 async def on_ready():
     print(f'We have logged in as {client.me}')
+    print(f"Running bot in '{environment}' environment.")
 
 client.start()
